@@ -33,6 +33,17 @@ function getForwardedValue(value: string | null | undefined): string | null {
   return first ? first : null;
 }
 
+function rawHeader(c: Context<{ Variables: AppVariables }>, name: string): string | undefined {
+  const { headers } = c.req.raw;
+  // Web API Headers (Edge / local Node.js via hono/node-server)
+  if (typeof (headers as unknown as { get?: unknown }).get === "function") {
+    return (headers as unknown as Headers).get(name) ?? undefined;
+  }
+  // Node.js IncomingMessage.headers — plain lowercase object (Vercel Node.js runtime)
+  const value = (headers as unknown as Record<string, string | string[] | undefined>)[name.toLowerCase()];
+  return Array.isArray(value) ? value[0] : value;
+}
+
 function resolveRequestOrigin(c: Context<{ Variables: AppVariables }>): string {
   const configuredBaseUrl = c.get("config").appBaseUrl;
   if (configuredBaseUrl) {
@@ -42,10 +53,10 @@ function resolveRequestOrigin(c: Context<{ Variables: AppVariables }>): string {
   try {
     return new URL(c.req.url).origin;
   } catch {
-    const protocol = getForwardedValue(c.req.header("x-forwarded-proto")) ?? "https";
+    const protocol = getForwardedValue(rawHeader(c, "x-forwarded-proto")) ?? "https";
     const host =
-      getForwardedValue(c.req.header("x-forwarded-host")) ??
-      getForwardedValue(c.req.header("host"));
+      getForwardedValue(rawHeader(c, "x-forwarded-host")) ??
+      getForwardedValue(rawHeader(c, "host"));
 
     if (host) {
       return `${protocol}://${host}`;
@@ -64,7 +75,7 @@ async function applyRateLimitHeaders(
   c: Context<{ Variables: AppVariables }>,
   scope: RateLimitScope
 ): Promise<RateLimitError | null> {
-  const rateLimit = await c.get("rateLimiter").check(scope, getClientIp((name) => c.req.header(name)));
+  const rateLimit = await c.get("rateLimiter").check(scope, getClientIp((name) => rawHeader(c, name)));
   c.header("X-RateLimit-Limit", String(rateLimit.limit));
   c.header("X-RateLimit-Remaining", String(rateLimit.remaining));
   c.header("X-RateLimit-Reset", String(Math.ceil(rateLimit.resetAt / 1000)));
@@ -107,7 +118,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
       path: c.req.path,
       status: c.res.status,
       durationMs: Number((performance.now() - startedAt).toFixed(2)),
-      ip: getClientIp((name) => c.req.header(name)),
+      ip: getClientIp((name) => rawHeader(c, name)),
       source: c.res.headers.get("X-ClawBadge-Source") ?? null
     });
   });
