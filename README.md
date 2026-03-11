@@ -56,7 +56,7 @@ The local server starts on `http://localhost:3000` by default.
 | --- | --- | --- |
 | `PORT` | `3000` | Local Node server port. |
 | `CLAWHUB_API_BASE` | `https://clawhub.ai/api/v1` | Fixed upstream base URL. |
-| `APP_BASE_URL` | `https://clawhub-badge.xyz` | Canonical public badge domain used in generated markdown snippets. |
+| `APP_BASE_URL` | `https://api.clawhub-badge.xyz` | Canonical public badge domain used in generated markdown snippets. |
 | `CACHE_TTL_SECONDS` | `300` | Fresh cache lifetime. |
 | `STALE_TTL_SECONDS` | `3600` | Serve-stale window after freshness expires. |
 | `UPSTREAM_TIMEOUT_MS` | `2500` | ClawHub request timeout. |
@@ -132,14 +132,14 @@ Supported query params:
 
 ## Example Markdown
 
-Examples below use your purchased domain `https://clawhub-badge.xyz`:
+Examples below use the API subdomain `https://api.clawhub-badge.xyz`, leaving `https://clawhub-badge.xyz` free for the future website project:
 
 ```md
-[![ClawHub Downloads](https://clawhub-badge.xyz/badge/free-ride/downloads.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Current Installs](https://clawhub-badge.xyz/badge/free-ride/installs-current.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Stars](https://clawhub-badge.xyz/badge/free-ride/stars.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Version](https://clawhub-badge.xyz/badge/free-ride/version.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Card](https://clawhub-badge.xyz/badge/free-ride/card.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Downloads](https://api.clawhub-badge.xyz/badge/free-ride/downloads.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Current Installs](https://api.clawhub-badge.xyz/badge/free-ride/installs-current.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Stars](https://api.clawhub-badge.xyz/badge/free-ride/stars.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Version](https://api.clawhub-badge.xyz/badge/free-ride/version.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Card](https://api.clawhub-badge.xyz/badge/free-ride/card.svg)](https://clawhub.ai/skills/free-ride)
 ```
 
 ## Development Commands
