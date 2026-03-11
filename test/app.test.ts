@@ -69,4 +69,30 @@ describe("app routes", () => {
     expect(secondResponse.status).toBe(429);
     expect(await secondResponse.text()).toContain("rate limited");
   });
+
+  it("handles path-only request URLs without throwing", async () => {
+    const app = createApp({
+      ...testConfig,
+      appBaseUrl: null
+    });
+
+    const request = new Request("http://localhost/", {
+      headers: {
+        host: "api.clawhub-badge.xyz",
+        "x-forwarded-proto": "https",
+        "x-forwarded-for": "203.0.113.12"
+      }
+    });
+
+    Object.defineProperty(request, "url", {
+      value: "/",
+      configurable: true
+    });
+
+    const response = await app.request(request);
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain("https://api.clawhub-badge.xyz");
+  });
 });

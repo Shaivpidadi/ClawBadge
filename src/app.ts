@@ -28,6 +28,33 @@ type AppDependencies = {
   sharedStoreClient?: SharedStoreClient | null;
 };
 
+function getForwardedValue(value: string | null | undefined): string | null {
+  const first = value?.split(",")[0]?.trim();
+  return first ? first : null;
+}
+
+function resolveRequestOrigin(c: Context<{ Variables: AppVariables }>): string {
+  const configuredBaseUrl = c.get("config").appBaseUrl;
+  if (configuredBaseUrl) {
+    return configuredBaseUrl;
+  }
+
+  try {
+    return new URL(c.req.url).origin;
+  } catch {
+    const protocol = getForwardedValue(c.req.header("x-forwarded-proto")) ?? "https";
+    const host =
+      getForwardedValue(c.req.header("x-forwarded-host")) ??
+      getForwardedValue(c.req.header("host"));
+
+    if (host) {
+      return `${protocol}://${host}`;
+    }
+
+    return "http://localhost";
+  }
+}
+
 async function applyRateLimitHeaders(
   c: Context<{ Variables: AppVariables }>,
   scope: RateLimitScope
@@ -72,7 +99,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
     await next();
     c.get("logger").info("request.completed", {
       method: c.req.method,
-      path: new URL(c.req.url).pathname,
+      path: c.req.path,
       status: c.res.status,
       durationMs: Number((performance.now() - startedAt).toFixed(2)),
       ip: getClientIp(c.req.raw),
@@ -89,7 +116,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
 
   app.get("/", async (c) => {
     const rateLimitError = await applyRateLimitHeaders(c, "page");
-    const origin = c.get("config").appBaseUrl ?? new URL(c.req.url).origin;
+    const origin = resolveRequestOrigin(c);
     if (rateLimitError) {
       setHtmlHeaders(c);
       return c.html(
@@ -224,7 +251,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
   });
 
   app.get("/generate/:slug", async (c) => {
-    const origin = c.get("config").appBaseUrl ?? new URL(c.req.url).origin;
+    const origin = resolveRequestOrigin(c);
     const rateLimitError = await applyRateLimitHeaders(c, "page");
 
     if (rateLimitError) {
