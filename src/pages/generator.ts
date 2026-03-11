@@ -19,16 +19,25 @@ type MarkdownSnippets = {
 };
 
 type SnippetBlock = {
-  id: string;
   title: string;
   eyebrow: string;
   snippet: string;
+  note: string;
+  previewHref?: string;
 };
 
-function buildMarkdown(origin: string, slug: string, theme: "default" | "dark" | "flat"): MarkdownSnippets {
+type ThemeOption = "default" | "dark" | "flat";
+
+function buildThemeQuery(theme: ThemeOption, extraParams: string[] = []): string {
+  const params = theme === "default" ? [...extraParams] : [`theme=${theme}`, ...extraParams];
+  return params.length > 0 ? `?${params.join("&")}` : "";
+}
+
+function buildMarkdown(origin: string, slug: string, theme: ThemeOption): MarkdownSnippets {
   const skillUrl = `https://clawhub.ai/skills/${slug}`;
   const badgeBase = `${origin}/badge/${slug}`;
-  const themeQuery = theme === "default" ? "" : `?theme=${theme}`;
+  const themeQuery = buildThemeQuery(theme);
+  const cardQuery = buildThemeQuery(theme, ["showOwner=1", "showUpdated=1"]);
 
   return {
     downloads: `[![ClawHub Downloads](${badgeBase}/downloads.svg${themeQuery})](${skillUrl})`,
@@ -38,7 +47,7 @@ function buildMarkdown(origin: string, slug: string, theme: "default" | "dark" |
       `[![ClawHub Stars](${badgeBase}/stars.svg${themeQuery})](${skillUrl})`,
       `[![ClawHub Version](${badgeBase}/version.svg${themeQuery})](${skillUrl})`
     ].join("\n"),
-    card: `[![ClawHub Card](${badgeBase}/card.svg${themeQuery})](${skillUrl})`
+    card: `[![ClawHub Card](${badgeBase}/card.svg${cardQuery})](${skillUrl})`
   };
 }
 
@@ -76,37 +85,72 @@ function renderBrandMark(): string {
   </svg>`;
 }
 
-function renderSnippetBlock({ id, title, eyebrow, snippet }: SnippetBlock): string {
+function renderCopyButton(text: string, label: string, caption = "Copy"): string {
+  return `<button class="copy-button" type="button" data-copy-text="${escapeXml(text)}" data-copy-label="${escapeXml(label)}">${escapeXml(caption)}</button>`;
+}
+
+function renderSnippetBlock({ title, eyebrow, snippet, note, previewHref }: SnippetBlock): string {
   return `<section class="snippet-card">
     <div class="snippet-card-head">
       <div>
         <p class="mini-label">${escapeXml(eyebrow)}</p>
         <h3>${escapeXml(title)}</h3>
+        <p class="snippet-note">${escapeXml(note)}</p>
       </div>
-      <button class="copy-button" type="button" data-copy-target="${escapeXml(id)}">Copy</button>
+      <div class="snippet-actions">
+        ${renderCopyButton(snippet, `${title} markdown`)}
+        ${previewHref ? `<a class="text-link snippet-link" href="${escapeXml(previewHref)}" target="_blank" rel="noreferrer">Preview</a>` : ""}
+      </div>
     </div>
-    <pre id="${escapeXml(id)}">${escapeXml(snippet)}</pre>
+    <pre class="copy-surface" tabindex="0" role="button" data-copy-text="${escapeXml(snippet)}" data-copy-label="${escapeXml(title)} markdown">${escapeXml(snippet)}</pre>
   </section>`;
 }
 
-function renderBadgeRail(origin: string, slug: string, theme: "default" | "dark" | "flat", title: string, subtitle: string): string {
-  const suffix = theme === "default" ? "" : `?theme=${theme}`;
+function renderCardTile(origin: string, slug: string, theme: ThemeOption, title: string, note: string, snippet: string): string {
+  const query = buildThemeQuery(theme, ["showOwner=1", "showUpdated=1"]);
+  const href = `${origin}/badge/${slug}/card.svg${query}`;
 
-  return `<section class="rail-card theme-${escapeXml(theme)}">
-    <div class="rail-head">
+  return `<article class="asset-tile card-tile">
+    <div class="asset-head">
       <div>
-        <p class="mini-label">${escapeXml(theme)}</p>
+        <p class="mini-label">Card</p>
         <h3>${escapeXml(title)}</h3>
+        <p class="asset-note">${escapeXml(note)}</p>
       </div>
-      <span class="rail-note">${escapeXml(subtitle)}</span>
+      ${renderCopyButton(snippet, `${title} card markdown`, "Copy markdown")}
     </div>
-    <div class="rail-stack">
+    <a class="card-frame" href="${escapeXml(href)}" target="_blank" rel="noreferrer">
+      <img class="card-preview" src="${escapeXml(href)}" alt="${escapeXml(title)} ClawHub summary card" />
+    </a>
+    <div class="asset-foot">
+      <a class="text-link" href="${escapeXml(href)}" target="_blank" rel="noreferrer">Open SVG</a>
+    </div>
+  </article>`;
+}
+
+function renderBadgeThemeRow(origin: string, slug: string, theme: ThemeOption, title: string, note: string, snippet: string): string {
+  const suffix = buildThemeQuery(theme);
+  const openHref = `${origin}/badge/${slug}/downloads.svg${suffix}`;
+
+  return `<article class="theme-row">
+    <div class="theme-row-head">
+      <div>
+        <p class="mini-label">${escapeXml(theme)} badge row</p>
+        <h3>${escapeXml(title)}</h3>
+        <p class="asset-note">${escapeXml(note)}</p>
+      </div>
+      <div class="theme-actions">
+        ${renderCopyButton(snippet, `${title} markdown`, "Copy row")}
+        <a class="text-link" href="${escapeXml(openHref)}" target="_blank" rel="noreferrer">Open SVG</a>
+      </div>
+    </div>
+    <div class="badge-lane">
       <img src="${escapeXml(`${origin}/badge/${slug}/downloads.svg${suffix}`)}" alt="Downloads badge ${escapeXml(theme)}" />
       <img src="${escapeXml(`${origin}/badge/${slug}/installs-current.svg${suffix}`)}" alt="Current installs badge ${escapeXml(theme)}" />
       <img src="${escapeXml(`${origin}/badge/${slug}/stars.svg${suffix}`)}" alt="Stars badge ${escapeXml(theme)}" />
       <img src="${escapeXml(`${origin}/badge/${slug}/version.svg${suffix}`)}" alt="Version badge ${escapeXml(theme)}" />
     </div>
-  </section>`;
+  </article>`;
 }
 
 function renderMetricTiles(skill: NormalizedSkill): string {
@@ -138,7 +182,7 @@ function renderMetricTiles(skill: NormalizedSkill): string {
       (tile) => `<article class="metric-tile">
         <p class="mini-label">${escapeXml(tile.label)}</p>
         <strong>${escapeXml(tile.value)}</strong>
-        <span>${escapeXml(tile.accent)} badge label</span>
+        <span>${escapeXml(`Badge reads ${tile.accent}`)}</span>
       </article>`
     )
     .join("");
@@ -148,25 +192,33 @@ function renderEmptyState(origin: string): string {
   return `<section class="workspace empty-workspace">
     <div class="workspace-head">
       <div>
-        <p class="section-label">How it works</p>
-        <h2>Paste a slug, inspect the embeds, copy the markdown.</h2>
+        <p class="section-label">1. Pick a skill</p>
+        <h2>Start with a public ClawHub slug.</h2>
+        <p class="workspace-copy">Try <code>free-ride</code> to load live previews and ready-to-paste markdown.</p>
       </div>
       <span class="workspace-pill">${escapeXml(origin)}</span>
     </div>
     <div class="empty-grid">
       <article class="empty-card">
-        <ol class="step-list">
-          <li><strong>Use a public slug.</strong> Start with a skill such as <code>free-ride</code>.</li>
-          <li><strong>Preview the output.</strong> The page renders badge rows and the summary card from live public ClawHub data.</li>
-          <li><strong>Keep embeds stable.</strong> All generated links stay on the API host so the root domain can become the marketing site later.</li>
-        </ol>
+        <span class="step-index">1</span>
+        <h3>Enter a slug</h3>
+        <p>Paste any public ClawHub skill slug into the field above.</p>
+      </article>
+      <article class="empty-card">
+        <span class="step-index">2</span>
+        <h3>Review the assets</h3>
+        <p>Check the card themes and badge rows rendered from live skill data.</p>
+      </article>
+      <article class="empty-card">
+        <span class="step-index">3</span>
+        <h3>Copy the markdown</h3>
+        <p>Use the copy buttons or click the code blocks to move embeds into your README.</p>
       </article>
       <article class="console-card">
-        <p class="section-label">Example endpoints</p>
-        <code>GET ${escapeXml(origin)}/api/skills/free-ride</code>
-        <code>GET ${escapeXml(origin)}/badge/free-ride/downloads.svg</code>
-        <code>GET ${escapeXml(origin)}/badge/free-ride/card.svg?theme=flat</code>
-        <code>GET ${escapeXml(origin)}/generate/free-ride</code>
+        <p class="section-label">What you get</p>
+        <code>${escapeXml(origin)}/badge/free-ride/downloads.svg</code>
+        <code>${escapeXml(origin)}/badge/free-ride/card.svg?theme=flat</code>
+        <code>${escapeXml(origin)}/generate/free-ride</code>
       </article>
     </div>
   </section>`;
@@ -178,41 +230,32 @@ function renderPreviewSection(skill: NormalizedSkill, origin: string, defaultMar
   const summary = truncateText(skill.summary || "Live ClawHub skill metrics for README embeds.", 168);
   const snippets: SnippetBlock[] = [
     {
-      id: "snippet-single",
       title: "Single badge",
-      eyebrow: "Markdown",
-      snippet: defaultMarkdown.downloads
+      eyebrow: "Quick copy",
+      snippet: defaultMarkdown.downloads,
+      note: "Use one compact metric at the top of a README.",
+      previewHref: `${origin}/badge/${skill.slug}/downloads.svg`
     },
     {
-      id: "snippet-row",
       title: "Default badge row",
-      eyebrow: "Markdown",
-      snippet: defaultMarkdown.multi
+      eyebrow: "Quick copy",
+      snippet: defaultMarkdown.multi,
+      note: "The standard four-badge line for most README layouts.",
+      previewHref: `${origin}/badge/${skill.slug}/downloads.svg`
     },
     {
-      id: "snippet-card",
       title: "Summary card",
-      eyebrow: "Markdown",
-      snippet: defaultMarkdown.card
-    },
-    {
-      id: "snippet-dark-card",
-      title: "Dark card",
-      eyebrow: "Markdown",
-      snippet: darkMarkdown.card
-    },
-    {
-      id: "snippet-flat-row",
-      title: "Flat theme row",
-      eyebrow: "Markdown",
-      snippet: flatMarkdown.multi
+      eyebrow: "Quick copy",
+      snippet: flatMarkdown.card,
+      note: "Larger embed with summary, owner, and headline metrics.",
+      previewHref: `${origin}/badge/${skill.slug}/card.svg?theme=flat&showOwner=1&showUpdated=1`
     }
   ];
 
   return `<section class="workspace skill-workspace">
       <div class="workspace-head">
         <div>
-          <p class="section-label">Skill</p>
+          <p class="section-label">1. Skill</p>
           <h2>${escapeXml(skill.displayName)}</h2>
           <p class="workspace-copy">${escapeXml(summary)}</p>
         </div>
@@ -227,37 +270,46 @@ function renderPreviewSection(skill: NormalizedSkill, origin: string, defaultMar
         ${renderMetricTiles(skill)}
       </div>
     </section>
-    <section class="workspace display-grid">
-      <div class="feature-card stage-card">
-        <div class="stage-head">
-          <div>
-            <p class="section-label">Card</p>
-            <h2>Summary card previews</h2>
-          </div>
-          <a class="text-link" href="${escapeXml(`https://clawhub.ai/skills/${skill.slug}`)}" target="_blank" rel="noreferrer">Open on ClawHub</a>
+    <section class="workspace asset-workspace">
+      <div class="workspace-head">
+        <div>
+          <p class="section-label">2. Preview assets</p>
+          <h2>Choose the SVG you want to ship.</h2>
+          <p class="workspace-copy">Card previews and badge rows below are the exact assets served from this host.</p>
         </div>
-        <div class="card-gallery">
-          <img class="card-preview main-card" src="${escapeXml(`${origin}/badge/${skill.slug}/card.svg?theme=flat&showOwner=1&showUpdated=1`)}" alt="Flat ClawHub summary card" />
-          <img class="card-preview secondary-card" src="${escapeXml(`${origin}/badge/${skill.slug}/card.svg?theme=dark&showOwner=1&showUpdated=1`)}" alt="Dark ClawHub summary card" />
-        </div>
+        <a class="workspace-link" href="${escapeXml(`https://clawhub.ai/skills/${skill.slug}`)}" target="_blank" rel="noreferrer">Open on ClawHub</a>
       </div>
-      <div class="feature-card rail-group">
-        <div class="stage-head">
-          <div>
-            <p class="section-label">Badges</p>
-            <h2>Theme variants</h2>
+      <div class="asset-grid">
+        <section class="feature-card card-panel">
+          <div class="section-stack">
+            <p class="section-label">Card themes</p>
+            <h3>Summary cards</h3>
           </div>
-        </div>
-        ${renderBadgeRail(origin, skill.slug, "default", "Registry default", "Balanced sea-glass contrast")}
-        ${renderBadgeRail(origin, skill.slug, "dark", "Night dive", "For darker README palettes")}
-        ${renderBadgeRail(origin, skill.slug, "flat", "Shell amber", "Warm lobster-accented row")}
+          <div class="card-grid">
+            ${renderCardTile(origin, skill.slug, "flat", "Flat", "Warm branded card for light README sections.", flatMarkdown.card)}
+            ${renderCardTile(origin, skill.slug, "default", "Default", "Neutral light card with the standard palette.", defaultMarkdown.card)}
+            ${renderCardTile(origin, skill.slug, "dark", "Dark", "Best when the surrounding section is dark.", darkMarkdown.card)}
+          </div>
+        </section>
+        <section class="feature-card badge-panel">
+          <div class="section-stack">
+            <p class="section-label">Badge rows</p>
+            <h3>README badge lines</h3>
+          </div>
+          <div class="theme-list">
+            ${renderBadgeThemeRow(origin, skill.slug, "default", "Default", "Best starting point for most README backgrounds.", defaultMarkdown.multi)}
+            ${renderBadgeThemeRow(origin, skill.slug, "dark", "Dark", "Higher contrast for dark README sections.", darkMarkdown.multi)}
+            ${renderBadgeThemeRow(origin, skill.slug, "flat", "Flat", "Warm ClawHub tone with the lobster accent.", flatMarkdown.multi)}
+          </div>
+        </section>
       </div>
     </section>
     <section class="workspace snippet-workspace">
       <div class="workspace-head">
         <div>
-          <p class="section-label">Markdown</p>
-          <h2>Copy the exact embed you want.</h2>
+          <p class="section-label">3. Copy markdown</p>
+          <h2>Paste the final embed into your README.</h2>
+          <p class="workspace-copy">Every block below is clickable, and each action copies the exact markdown shown.</p>
         </div>
         <span class="workspace-pill">${escapeXml(origin)}</span>
       </div>
@@ -297,17 +349,13 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         --bg: #06131d;
         --bg-deep: #04111a;
         --panel: rgba(8, 22, 34, 0.9);
-        --panel-strong: rgba(10, 28, 42, 0.96);
         --panel-soft: rgba(11, 31, 45, 0.76);
         --line: rgba(143, 228, 255, 0.16);
-        --line-strong: rgba(255, 165, 114, 0.28);
         --text: #f5ecd7;
         --muted: #9bc7d7;
         --muted-strong: #d7f3ff;
         --accent: #ff8b57;
-        --accent-deep: #cf4f31;
         --teal: #76d7f7;
-        --teal-soft: rgba(118, 215, 247, 0.18);
         --sand: #fff3dd;
         --code: #07141f;
         --shadow: 0 18px 38px rgba(0, 0, 0, 0.26);
@@ -379,12 +427,18 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         color: inherit;
       }
 
+      code {
+        font-family: "SFMono-Regular", "Menlo", monospace;
+      }
+
       .hero-shell,
       .workspace,
       .feature-card,
       .snippet-card,
       .console-card,
-      .rail-card {
+      .empty-card,
+      .theme-row,
+      .asset-tile {
         border: 1px solid var(--line);
         background: var(--panel);
         box-shadow: var(--shadow);
@@ -393,16 +447,27 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
 
       .hero-shell {
         display: grid;
-        grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
-        gap: 18px;
-        border-radius: 28px;
-        padding: 20px;
+        gap: 16px;
+        border-radius: 24px;
+        padding: 18px;
       }
 
-      .hero-copy {
-        display: grid;
+      .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .hero-brand {
+        display: flex;
         gap: 14px;
-        align-content: start;
+        align-items: flex-start;
+      }
+
+      .hero-brand-copy {
+        display: grid;
+        gap: 8px;
       }
 
       .section-label,
@@ -422,21 +487,25 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         font-size: 0.68rem;
       }
 
-      .hero-copy h1 {
-        max-width: 14ch;
-        font-size: clamp(2.1rem, 4.8vw, 3.35rem);
+      .hero-brand-copy h1 {
+        max-width: 13ch;
+        font-size: clamp(2rem, 4.1vw, 3rem);
         line-height: 0.98;
       }
 
-      .hero-copy p {
-        max-width: 58ch;
+      .hero-brand-copy p {
+        max-width: 62ch;
         color: var(--muted);
-        font-size: 0.98rem;
-        line-height: 1.58;
+        font-size: 0.96rem;
+        line-height: 1.5;
       }
 
-      .workspace-pill,
-      .rail-note {
+      .brand-mark {
+        width: 82px;
+        height: auto;
+      }
+
+      .workspace-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -447,13 +516,30 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         font-size: 0.8rem;
       }
 
-      .hero-form-shell {
+      .host-badge {
         display: grid;
-        gap: 10px;
+        gap: 6px;
+        min-width: 230px;
         padding: 14px;
-        border-radius: 18px;
+        border-radius: 16px;
         background: rgba(255, 255, 255, 0.035);
         border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .host-badge code,
+      .console-card code {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: rgba(2, 9, 15, 0.78);
+        color: #bcecff;
+        font-size: 0.8rem;
+        word-break: break-word;
+      }
+
+      .hero-controls {
+        display: grid;
+        gap: 12px;
       }
 
       form {
@@ -480,7 +566,8 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       input:focus,
       button:focus,
       .copy-button:focus,
-      .sample-link:focus {
+      .sample-link:focus,
+      .copy-surface:focus {
         outline: 2px solid rgba(118, 215, 247, 0.45);
         outline-offset: 2px;
       }
@@ -510,7 +597,9 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       button:hover,
       .copy-button:hover,
       .sample-link:hover,
-      .text-link:hover {
+      .text-link:hover,
+      .workspace-link:hover,
+      .snippet-link:hover {
         transform: translateY(-1px);
       }
 
@@ -530,88 +619,47 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         font-size: 0.88rem;
       }
 
-      .hero-stage {
-        position: relative;
+      .hero-guides {
         display: grid;
-        align-content: space-between;
-        gap: 14px;
-        min-height: 100%;
-        padding: 18px;
-        border-radius: 22px;
-        background:
-          radial-gradient(circle at 18% 18%, rgba(255, 139, 87, 0.12), transparent 22%),
-          linear-gradient(180deg, rgba(4, 15, 24, 0.72), rgba(4, 15, 24, 0.92));
-        overflow: hidden;
-      }
-
-      .hero-stage::before,
-      .hero-stage::after {
-        content: "";
-        position: absolute;
-        border-radius: 999px;
-        pointer-events: none;
-      }
-
-      .hero-stage::before {
-        width: 120px;
-        height: 120px;
-        right: -30px;
-        top: -30px;
-        background: radial-gradient(circle, rgba(118, 215, 247, 0.16), transparent 68%);
-      }
-
-      .hero-stage::after {
-        width: 82px;
-        height: 82px;
-        left: -12px;
-        bottom: 16px;
-        background: radial-gradient(circle, rgba(255, 139, 87, 0.18), transparent 68%);
-      }
-
-      .stage-brand {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        justify-items: start;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
       }
 
-      .brand-mark {
-        width: clamp(126px, 18vw, 172px);
-        height: auto;
+      .guide-chip {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.035);
+        border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      .stage-brand h2 {
-        font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+      .guide-number,
+      .step-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: rgba(255, 139, 87, 0.16);
+        color: #ffd9b5;
+        font-size: 0.82rem;
+        font-weight: 700;
       }
 
-      .stage-brand p {
-        max-width: 30ch;
-        color: var(--muted);
-        line-height: 1.55;
-      }
-
-      .endpoint-card {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        gap: 8px;
-        padding: 14px;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.045);
-        border: 1px solid rgba(255, 255, 255, 0.07);
-      }
-
-      .endpoint-card code,
-      .console-card code {
+      .guide-chip strong {
         display: block;
-        padding: 10px 12px;
-        border-radius: 12px;
-        background: rgba(2, 9, 15, 0.78);
-        color: #bcecff;
-        font-family: "SFMono-Regular", "Menlo", monospace;
-        font-size: 0.8rem;
-        word-break: break-word;
+        font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+        letter-spacing: 0;
+      }
+
+      .guide-chip span:last-child,
+      .empty-card p {
+        color: var(--muted);
+        line-height: 1.5;
       }
 
       .workspace {
@@ -626,8 +674,6 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       }
 
       .workspace-head,
-      .stage-head,
-      .rail-head,
       .snippet-card-head {
         display: flex;
         justify-content: space-between;
@@ -640,7 +686,7 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       }
 
       .workspace-head h2,
-      .stage-head h2 {
+      .section-stack h3 {
         font-size: clamp(1.45rem, 2.4vw, 1.95rem);
       }
 
@@ -649,6 +695,10 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         max-width: 64ch;
         color: var(--muted);
         line-height: 1.56;
+      }
+
+      .workspace-copy code {
+        color: var(--muted-strong);
       }
 
       .workspace-meta {
@@ -675,9 +725,14 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
 
       .metric-grid,
       .snippet-grid,
-      .empty-grid {
+      .empty-grid,
+      .asset-grid,
+      .card-grid,
+      .theme-list,
+      .section-stack,
+      .asset-tile {
         display: grid;
-        gap: 12px;
+        gap: 14px;
       }
 
       .metric-grid {
@@ -690,6 +745,14 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         border-radius: 18px;
         background: var(--panel-soft);
         border: 1px solid rgba(118, 215, 247, 0.12);
+      }
+
+      .empty-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .empty-card {
+        align-content: start;
       }
 
       .metric-tile strong {
@@ -705,10 +768,13 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         font-size: 0.84rem;
       }
 
-      .display-grid {
+      .console-card {
+        grid-column: 1 / -1;
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-        gap: 14px;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(7, 20, 31, 0.92), rgba(9, 32, 48, 0.9));
       }
 
       .feature-card {
@@ -716,60 +782,80 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         padding: 14px;
       }
 
-      .stage-card,
-      .rail-group {
-        display: grid;
-        gap: 10px;
+      .card-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
       }
 
-      .card-gallery {
-        display: grid;
-        grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.78fr);
-        gap: 10px;
+      .asset-head,
+      .theme-row-head,
+      .theme-actions,
+      .snippet-actions,
+      .asset-foot {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .asset-head,
+      .theme-row-head {
+        justify-content: space-between;
         align-items: start;
       }
 
+      .asset-note,
+      .snippet-note {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .asset-tile,
+      .theme-row {
+        padding: 12px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .card-frame {
+        display: block;
+        padding: 10px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255, 139, 87, 0.08), rgba(118, 215, 247, 0.05));
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
       .card-preview {
+        display: block;
         width: 100%;
         height: auto;
-        border-radius: 22px;
-        background: rgba(255, 255, 255, 0.04);
+        border-radius: 16px;
       }
 
-      .main-card {
-        padding: 8px;
-        background: linear-gradient(180deg, rgba(255, 139, 87, 0.08), rgba(118, 215, 247, 0.05));
+      .theme-list {
+        gap: 12px;
       }
 
-      .secondary-card {
-        padding: 6px;
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .rail-card {
-        border-radius: 18px;
+      .badge-lane {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
         padding: 12px;
-        background: rgba(255, 255, 255, 0.035);
+        border-radius: 16px;
+        background: var(--code);
+        border: 1px solid rgba(118, 215, 247, 0.1);
       }
 
-      .rail-stack {
-        display: grid;
-        gap: 8px;
-        margin-top: 10px;
-      }
-
-      .rail-stack img {
-        max-width: max-content;
-        height: auto;
-      }
-
-      .rail-note {
-        color: var(--muted);
-        background: rgba(255, 255, 255, 0.03);
+      .badge-lane img {
+        display: block;
+        width: auto;
+        height: 28px;
       }
 
       .snippet-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .snippet-card {
@@ -785,13 +871,14 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       .snippet-card h3,
       .empty-card h3,
       .console-card h3,
-      .rail-head h3 {
+      .theme-row h3,
+      .asset-tile h3 {
         font-size: 1.08rem;
       }
 
       .copy-button {
-        min-width: 70px;
-        padding: 8px 12px;
+        min-width: 96px;
+        padding: 9px 12px;
         color: var(--sand);
         background: rgba(118, 215, 247, 0.12);
         border: 1px solid rgba(118, 215, 247, 0.16);
@@ -807,52 +894,26 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         margin: 0;
         padding: 12px 14px;
         min-height: 88px;
-        overflow-x: auto;
+        max-height: 196px;
+        overflow: auto;
         border-radius: 14px;
         background: var(--code);
         color: #d5effd;
         border: 1px solid rgba(118, 215, 247, 0.1);
-        font-family: "SFMono-Regular", "Menlo", monospace;
         font-size: 0.82rem;
         line-height: 1.55;
         white-space: pre-wrap;
         word-break: break-word;
       }
 
-      .empty-grid {
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      .copy-surface {
+        cursor: pointer;
+        transition: border-color 160ms ease, background 160ms ease;
       }
 
-      .empty-card {
-        min-height: auto;
-      }
-
-      .step-list {
-        margin: 0;
-        padding-left: 1.1rem;
-        display: grid;
-        gap: 10px;
-        color: var(--muted);
-        line-height: 1.58;
-      }
-
-      .step-list strong {
-        color: var(--sand);
-        font-family: "Avenir Next", "Trebuchet MS", sans-serif;
-        letter-spacing: 0;
-      }
-
-      .step-list code {
-        color: var(--muted-strong);
-        font-family: "SFMono-Regular", "Menlo", monospace;
-      }
-
-      .console-card {
-        display: grid;
-        gap: 10px;
-        padding: 16px;
-        border-radius: 18px;
-        background: linear-gradient(135deg, rgba(7, 20, 31, 0.92), rgba(9, 32, 48, 0.9));
+      .copy-surface:hover {
+        border-color: rgba(118, 215, 247, 0.28);
+        background: rgba(5, 18, 28, 0.94);
       }
 
       .text-link {
@@ -860,19 +921,72 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         text-decoration: none;
       }
 
+      .workspace-link,
+      .snippet-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(118, 215, 247, 0.16);
+        background: rgba(118, 215, 247, 0.08);
+        text-decoration: none;
+      }
+
+      .copy-toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 4;
+        min-width: 180px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(118, 215, 247, 0.2);
+        background: rgba(5, 19, 29, 0.96);
+        color: var(--sand);
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 160ms ease, transform 160ms ease;
+      }
+
+      .copy-toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .copy-toast.is-error {
+        border-color: rgba(255, 139, 87, 0.24);
+        color: #ffe3cf;
+      }
+
       @media (max-width: 1080px) {
-        .hero-shell,
-        .display-grid,
-        .empty-grid {
-          grid-template-columns: 1fr;
+        .hero-top,
+        .workspace-head,
+        .asset-head,
+        .theme-row-head {
+          flex-direction: column;
         }
 
-        .card-gallery {
+        .host-badge {
+          min-width: 0;
+          width: 100%;
+        }
+
+        .hero-guides,
+        .card-grid,
+        .snippet-grid,
+        .empty-grid {
           grid-template-columns: 1fr;
         }
 
         .metric-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .workspace-meta {
+          justify-content: flex-start;
         }
       }
 
@@ -888,19 +1002,25 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
           padding: 14px;
         }
 
-        .hero-copy h1,
+        .hero-brand {
+          flex-direction: column;
+        }
+
+        .hero-brand-copy h1,
         .workspace-head h2,
-        .stage-head h2 {
+        .section-stack h3 {
           max-width: none;
           font-size: clamp(1.9rem, 11vw, 2.65rem);
         }
 
-        form,
-        .workspace-head,
-        .stage-head,
-        .snippet-card-head,
-        .rail-head {
+        form {
           grid-template-columns: 1fr;
+        }
+
+        .workspace-head,
+        .snippet-card-head,
+        .asset-head,
+        .theme-row-head {
           flex-direction: column;
         }
 
@@ -909,20 +1029,12 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
           width: 100%;
         }
 
-        .hero-stage {
-          padding: 14px;
-        }
-
         .metric-grid {
           grid-template-columns: 1fr;
         }
 
-        .workspace-meta {
-          justify-content: flex-start;
-        }
-
-        .rail-stack img {
-          max-width: 100%;
+        .badge-lane img {
+          height: 24px;
         }
       }
     </style>
@@ -930,46 +1042,100 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
   <body>
     <main>
       <section class="hero-shell">
-        <div class="hero-copy">
-          <p class="section-label">ClawBadge Generator</p>
-          <h1>Generate clean ClawHub embeds.</h1>
-          <p>Paste a public slug, inspect the badge and card variants, and copy markdown that stays pinned to the API host while the root domain becomes the site later.</p>
-          <div class="hero-form-shell">
-            <form id="slug-form">
-              <input id="slug-input" name="slug" value="${escapeXml(defaultSlug)}" placeholder="free-ride" autocomplete="off" spellcheck="false" />
-              <button type="submit">Generate</button>
-            </form>
-            <div class="sample-links">
-              <a class="sample-link" href="/generate/free-ride">Try free-ride</a>
-              <a class="sample-link" href="/api/health">Check API health</a>
-              <a class="sample-link" href="/badge/free-ride/downloads.svg">Open a sample badge</a>
+        <div class="hero-top">
+          <div class="hero-brand">
+            ${renderBrandMark()}
+            <div class="hero-brand-copy">
+              <p class="section-label">ClawBadge Generator</p>
+              <h1>Generate README embeds for ClawHub skills.</h1>
+              <p>Enter a public slug, review the live SVG previews, then copy the markdown you actually want to ship.</p>
             </div>
+          </div>
+          <div class="host-badge">
+            <p class="section-label">API host</p>
+            <code>${escapeXml(origin)}</code>
           </div>
         </div>
-        <aside class="hero-stage">
-          <div class="stage-brand">
-            ${renderBrandMark()}
-            <div>
-              <p class="section-label">Service host</p>
-              <h2>Compact preview, stable URLs.</h2>
-            </div>
-            <p>The page keeps the ClawHub lobster palette, but the layout now behaves like a tool: direct, dense, and easy to scan.</p>
+        <div class="hero-controls">
+          <form id="slug-form">
+            <input id="slug-input" name="slug" value="${escapeXml(defaultSlug)}" placeholder="free-ride" autocomplete="off" spellcheck="false" />
+            <button type="submit">Load skill</button>
+          </form>
+          <div class="sample-links">
+            <a class="sample-link" href="/generate/free-ride">Try free-ride</a>
+            <a class="sample-link" href="/api/health">Check API health</a>
+            <a class="sample-link" href="/badge/free-ride/downloads.svg">Open a sample badge</a>
           </div>
-          <div class="endpoint-card">
-            <p class="section-label">Stable host</p>
-            <code>${escapeXml(`${origin}/api/skills/free-ride`)}</code>
-            <code>${escapeXml(`${origin}/badge/free-ride/card.svg?theme=flat`)}</code>
-            <code>${escapeXml(`${origin}/generate/free-ride`)}</code>
+          <div class="hero-guides">
+            <article class="guide-chip">
+              <span class="guide-number">1</span>
+              <span><strong>Load a public skill</strong> Paste any ClawHub slug to fetch live data.</span>
+            </article>
+            <article class="guide-chip">
+              <span class="guide-number">2</span>
+              <span><strong>Inspect the SVG previews</strong> Check the card themes and badge rows before copying.</span>
+            </article>
+            <article class="guide-chip">
+              <span class="guide-number">3</span>
+              <span><strong>Copy markdown</strong> Use the buttons or click the code blocks directly.</span>
+            </article>
           </div>
-        </aside>
+        </div>
       </section>
       ${errorSection}
       ${contentSection}
     </main>
+    <div class="copy-toast" id="copy-toast" role="status" aria-live="polite"></div>
     <script>
       const form = document.getElementById("slug-form");
       const input = document.getElementById("slug-input");
-      const copyButtons = Array.from(document.querySelectorAll("[data-copy-target]"));
+      const copyTargets = Array.from(document.querySelectorAll("[data-copy-text]"));
+      const copyToast = document.getElementById("copy-toast");
+      let copyToastTimer = 0;
+
+      const showCopyToast = (message, isError = false) => {
+        if (!copyToast) return;
+        copyToast.textContent = message;
+        copyToast.classList.toggle("is-error", isError);
+        copyToast.classList.add("is-visible");
+        window.clearTimeout(copyToastTimer);
+        copyToastTimer = window.setTimeout(() => {
+          copyToast.classList.remove("is-visible");
+          copyToast.classList.remove("is-error");
+        }, 1600);
+      };
+
+      const selectElementText = (element) => {
+        const selection = window.getSelection();
+        if (!selection) return;
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      };
+
+      const runCopy = async (element, button) => {
+        const text = element.getAttribute("data-copy-text") || "";
+        const label = element.getAttribute("data-copy-label") || "Snippet";
+        if (!text) return;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          if (button) {
+            const previous = button.textContent;
+            button.textContent = "Copied";
+            button.classList.add("is-copied");
+            window.setTimeout(() => {
+              button.textContent = previous || "Copy";
+              button.classList.remove("is-copied");
+            }, 1200);
+          }
+          showCopyToast(label + " copied");
+        } catch {
+          selectElementText(element);
+          showCopyToast("Clipboard blocked. Press Cmd/Ctrl+C.", true);
+        }
+      };
 
       form?.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -978,26 +1144,24 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         window.location.href = "/generate/" + encodeURIComponent(slug);
       });
 
-      for (const button of copyButtons) {
-        button.addEventListener("click", async () => {
-          const targetId = button.getAttribute("data-copy-target");
-          const target = targetId ? document.getElementById(targetId) : null;
-          if (!target) return;
-
-          const text = target.textContent || "";
-
-          try {
-            await navigator.clipboard.writeText(text);
-            const previous = button.textContent;
-            button.textContent = "Copied";
-            button.classList.add("is-copied");
-            window.setTimeout(() => {
-              button.textContent = previous || "Copy";
-              button.classList.remove("is-copied");
-            }, 1400);
-          } catch {
-            button.textContent = "Select text";
+      for (const element of copyTargets) {
+        element.addEventListener("click", async (event) => {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLElement)) return;
+          if (target.matches("button")) {
+            await runCopy(target, target);
+            return;
           }
+          await runCopy(target);
+        });
+
+        element.addEventListener("keydown", async (event) => {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLElement)) return;
+          if (target.matches("button")) return;
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          await runCopy(target);
         });
       }
     </script>
