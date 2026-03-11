@@ -56,7 +56,7 @@ The local server starts on `http://localhost:3000` by default.
 | --- | --- | --- |
 | `PORT` | `3000` | Local Node server port. |
 | `CLAWHUB_API_BASE` | `https://clawhub.ai/api/v1` | Fixed upstream base URL. |
-| `APP_BASE_URL` | `https://badges.yourdomain.com` | Canonical public badge domain used in generated markdown snippets. |
+| `APP_BASE_URL` | `https://clawhub-badge.xyz` | Canonical public badge domain used in generated markdown snippets. |
 | `CACHE_TTL_SECONDS` | `300` | Fresh cache lifetime. |
 | `STALE_TTL_SECONDS` | `3600` | Serve-stale window after freshness expires. |
 | `UPSTREAM_TIMEOUT_MS` | `2500` | ClawHub request timeout. |
@@ -132,14 +132,14 @@ Supported query params:
 
 ## Example Markdown
 
-Replace `https://badges.yourdomain.com` with your final badge host if `APP_BASE_URL` is not set:
+Examples below use your purchased domain `https://clawhub-badge.xyz`:
 
 ```md
-[![ClawHub Downloads](https://badges.yourdomain.com/badge/free-ride/downloads.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Current Installs](https://badges.yourdomain.com/badge/free-ride/installs-current.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Stars](https://badges.yourdomain.com/badge/free-ride/stars.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Version](https://badges.yourdomain.com/badge/free-ride/version.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Card](https://badges.yourdomain.com/badge/free-ride/card.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Downloads](https://clawhub-badge.xyz/badge/free-ride/downloads.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Current Installs](https://clawhub-badge.xyz/badge/free-ride/installs-current.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Stars](https://clawhub-badge.xyz/badge/free-ride/stars.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Version](https://clawhub-badge.xyz/badge/free-ride/version.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Card](https://clawhub-badge.xyz/badge/free-ride/card.svg)](https://clawhub.ai/skills/free-ride)
 ```
 
 ## Development Commands
