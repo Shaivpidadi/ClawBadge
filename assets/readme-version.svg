@@ -1,11 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="24" role="img" aria-label="Free Ride - Unlimited free AI version: v1.0.4">
-  <title>Free Ride - Unlimited free AI version: v1.0.4</title>
-  <rect width="63" height="24" rx="12" fill="#111827" stroke="#111827" />
-  <rect x="51" width="69" height="24" rx="12" fill="#f59e0b" stroke="#111827" />
-  <rect x="62" y="3" width="1" height="18" fill="rgba(255,255,255,0.18)" />
-  <g fill="#fffdf6" font-family="Verdana, DejaVu Sans, sans-serif" font-size="11">
-    <text x="31.5" y="15" text-anchor="middle">version</text>
-    <text x="91.5" y="15" text-anchor="middle">v1.0.4</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="153" height="26" role="img" aria-label="Free Ride version: v1.0.4">
+  <title>Free Ride version: v1.0.4</title>
+  <defs>
+    <linearGradient id="cb-logo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d4d"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </linearGradient>
+    <linearGradient id="cb-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.10"/>
+    </linearGradient>
+    <clipPath id="cb-clip">
+      <rect width="153" height="26" rx="13"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#cb-clip)">
+    <rect width="86" height="26" fill="#374151"/>
+    <rect x="86" width="67" height="26" fill="#d97706"/>
+    <rect width="153" height="26" fill="url(#cb-grad)"/>
+  </g>
+  <g transform="translate(9, 6) scale(0.11667)" fill="none">
+    <path d="M60 10 C30 10 15 35 15 55 C15 75 30 95 45 100 L45 110 L55 110 L55 100 C55 100 60 102 65 100 L65 110 L75 110 L75 100 C90 95 105 75 105 55 C105 35 90 10 60 10Z" fill="url(#cb-logo)"/>
+    <path d="M20 45 C5 40 0 50 5 60 C10 70 20 65 25 55 C28 48 25 45 20 45Z" fill="url(#cb-logo)"/>
+    <path d="M100 45 C115 40 120 50 115 60 C110 70 100 65 95 55 C92 48 95 45 100 45Z" fill="url(#cb-logo)"/>
+  </g>
+  <g font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+    <text x="51" y="17" text-anchor="middle" fill="#ffffff" opacity="0.78">Version</text>
+    <text x="120" y="17" text-anchor="middle" fill="#ffffff" font-weight="700">v1.0.4</text>
   </g>
 </svg>
