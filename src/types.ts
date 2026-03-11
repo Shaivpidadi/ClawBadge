@@ -31,3 +31,12 @@ export type SkillLookupResult = {
   stale: boolean;
   source: "cache" | "stale-cache" | "upstream";
 };
+
+export type ThemeName = "default" | "dark" | "flat";
+
+export type BadgeMetric =
+  | "downloads"
+  | "installs-current"
+  | "installs-all-time"
+  | "stars"
+  | "version";
