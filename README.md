@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  ClawBadge is a read-only badge service that turns public ClawHub skill stats into embeddable GitHub README badges and summary cards.
+  SVG badge and summary card generator for ClawHub skills. Embed live download, install, and star metrics directly in your README.
 </p>
 
 <p align="center">
@@ -12,10 +12,6 @@
   <img src="./assets/readme-stars.svg" alt="Stars badge example" />
   <img src="./assets/readme-version.svg" alt="Version badge example" />
 </p>
-
-## Preview
-
-ClawBadge follows the same lobster-forward product direction as OpenClaw and ClawHub: deep ocean backgrounds, warm shell orange accents, and clean registry-style UI elements that still feel technical.
 
 ## Features
 
@@ -173,13 +169,9 @@ npm start
 
 ### Vercel
 
-The repo includes:
+Vercel natively detects the Hono app exported from `src/app.ts`. No adapter or custom function entrypoint is needed — just deploy the repository directly and set the environment variables listed above.
 
-- [`api/index.ts`](api/index.ts) using Hono’s Vercel adapter
-- [`vercel.json`](vercel.json) rewriting all routes to the function entrypoint
-
-Deploy the repository directly on Vercel and set the same environment variables listed above.
-For public production traffic on Vercel, also set a shared Redis/KV REST credential pair so cache entries and rate limits are shared across instances.
+For production traffic, set a shared Redis/KV REST credential pair so cache entries and rate limits are shared across instances.
 
 ### Cloudflare Workers
 
