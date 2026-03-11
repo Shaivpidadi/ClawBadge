@@ -194,7 +194,7 @@ function renderEmptyState(origin: string): string {
       <div>
         <p class="section-label">1. Pick a skill</p>
         <h2>Start with a public ClawHub slug.</h2>
-        <p class="workspace-copy">Try <code>free-ride</code> to load live previews and ready-to-paste markdown.</p>
+        <p class="workspace-copy">Click <strong>Try demo skill</strong> above to see live previews, or enter any public ClawHub slug.</p>
       </div>
       <span class="workspace-pill">${escapeXml(origin)}</span>
     </div>
@@ -216,9 +216,9 @@ function renderEmptyState(origin: string): string {
       </article>
       <article class="console-card">
         <p class="section-label">What you get</p>
-        <code>${escapeXml(origin)}/badge/free-ride/downloads.svg</code>
-        <code>${escapeXml(origin)}/badge/free-ride/card.svg?theme=flat</code>
-        <code>${escapeXml(origin)}/generate/free-ride</code>
+        <code>${escapeXml(origin)}/badge/my-skill/downloads.svg</code>
+        <code>${escapeXml(origin)}/badge/my-skill/card.svg?theme=flat</code>
+        <code>${escapeXml(origin)}/generate/my-skill</code>
       </article>
     </div>
   </section>`;
@@ -1058,11 +1058,11 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         </div>
         <div class="hero-controls">
           <form id="slug-form">
-            <input id="slug-input" name="slug" value="${escapeXml(defaultSlug)}" placeholder="free-ride" autocomplete="off" spellcheck="false" />
+            <input id="slug-input" name="slug" value="${escapeXml(defaultSlug)}" placeholder="my-skill" autocomplete="off" spellcheck="false" />
             <button type="submit">Load skill</button>
           </form>
           <div class="sample-links">
-            <a class="sample-link" href="/generate/free-ride">Try free-ride</a>
+            <a class="sample-link" href="/generate/free-ride">Try demo skill</a>
             <a class="sample-link" href="/api/health">Check API health</a>
             <a class="sample-link" href="/badge/free-ride/downloads.svg">Open a sample badge</a>
           </div>

@@ -5,7 +5,6 @@ type ThemePalette = {
     left: string;
     right: string;
     text: string;
-    border: string;
   };
   card: {
     background: string;
@@ -26,10 +25,9 @@ type ThemePalette = {
 const themePalettes: Record<ThemeName, ThemePalette> = {
   default: {
     badge: {
-      left: "#1f2937",
-      right: "#0f766e",
-      text: "#f8fafc",
-      border: "#0f172a"
+      left: "#374151",
+      right: "#0d9488",
+      text: "#ffffff"
     },
     card: {
       background: "url(#bg-default)",
@@ -48,10 +46,9 @@ const themePalettes: Record<ThemeName, ThemePalette> = {
   },
   dark: {
     badge: {
-      left: "#0f172a",
-      right: "#1d4ed8",
-      text: "#e2e8f0",
-      border: "#020617"
+      left: "#1e293b",
+      right: "#2563eb",
+      text: "#f1f5f9"
     },
     card: {
       background: "url(#bg-dark)",
@@ -70,10 +67,9 @@ const themePalettes: Record<ThemeName, ThemePalette> = {
   },
   flat: {
     badge: {
-      left: "#111827",
-      right: "#f59e0b",
-      text: "#fffdf6",
-      border: "#111827"
+      left: "#374151",
+      right: "#d97706",
+      text: "#ffffff"
     },
     card: {
       background: "#f7f3e8",
