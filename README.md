@@ -1,6 +1,25 @@
-# ClawBadge
+<p align="center">
+  <img src="./assets/logo.svg" alt="ClawBadge logo" width="760" />
+</p>
 
-ClawBadge is a read-only badge service that turns public ClawHub skill stats into embeddable GitHub README badges and summary cards.
+<p align="center">
+  ClawBadge is a read-only badge service that turns public ClawHub skill stats into embeddable GitHub README badges and summary cards.
+</p>
+
+<p align="center">
+  <img src="./assets/readme-downloads.svg" alt="Downloads badge example" />
+  <img src="./assets/readme-installs-current.svg" alt="Current installs badge example" />
+  <img src="./assets/readme-stars.svg" alt="Stars badge example" />
+  <img src="./assets/readme-version.svg" alt="Version badge example" />
+</p>
+
+<p align="center">
+  <img src="./assets/readme-card.svg" alt="ClawBadge summary card example" width="760" />
+</p>
+
+## Preview
+
+ClawBadge follows the same lobster-forward product direction as OpenClaw and ClawHub: deep ocean backgrounds, warm shell orange accents, and clean registry-style UI elements that still feel technical.
 
 ## Features
 

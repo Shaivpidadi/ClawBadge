@@ -19,6 +19,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "dev": "tsx watch src/index.ts",
+    "generate:readme-assets": "tsx scripts/generate-readme-assets.ts",
     "start": "node --enable-source-maps dist/index.js",
     "test": "vitest run",
     "test:update": "vitest run --update",

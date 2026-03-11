@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="244" role="img" aria-labelledby="card-title card-desc">
+  
+  <title id="card-title">Free Ride - Unlimited free AI on ClawHub</title>
+  <desc id="card-desc">Unlimited free AI access for demos, quick experiments, and README-friendly previews.</desc>
+  <rect width="420" height="244" rx="28" fill="#f7f3e8" />
+  <rect x="14" y="14" width="392" height="216" rx="24" fill="#fffaf0" stroke="#e5d4b2" />
+  <circle cx="366" cy="42" r="28" fill="#fed7aa" opacity="0.9" />
+  <circle cx="388" cy="72" r="18" fill="#b45309" opacity="0.22" />
+  <text x="28" y="42" fill="#1f2937" font-family="Verdana, DejaVu Sans, sans-serif" font-size="26" font-weight="700">Free Ride - Unlimited free AI</text>
+  <rect x="28" y="56" width="88" height="28" rx="14" fill="#1f2937" />
+  <text x="42" y="74" fill="#fffaf0" font-family="Verdana, DejaVu Sans, sans-serif" font-size="13">v1.0.4</text>
+  <text x="28" y="102" fill="#374151" font-family="Verdana, DejaVu Sans, sans-serif" font-size="13">Unlimited free AI access for demos, quick experiments, and README-friendly previews.</text>
+  <text x="28" y="122" fill="#6b7280" font-family="Verdana, DejaVu Sans, sans-serif" font-size="12">by @shaivpidadi • Updated Feb 2026</text>
+  <g transform="translate(26 144)">
+        <rect width="88" height="62" rx="16" fill="#fffdf7" stroke="#e5d4b2" />
+        <text x="12" y="24" fill="#6b7280" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Downloads</text>
+        <text x="12" y="44" fill="#1f2937" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">32.5k</text>
+      </g><g transform="translate(126 144)">
+        <rect width="88" height="62" rx="16" fill="#fffdf7" stroke="#e5d4b2" />
+        <text x="12" y="24" fill="#6b7280" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Installed now</text>
+        <text x="12" y="44" fill="#1f2937" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">180</text>
+      </g><g transform="translate(226 144)">
+        <rect width="88" height="62" rx="16" fill="#fffdf7" stroke="#e5d4b2" />
+        <text x="12" y="24" fill="#6b7280" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Installed ever</text>
+        <text x="12" y="44" fill="#1f2937" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">183</text>
+      </g><g transform="translate(326 144)">
+        <rect width="88" height="62" rx="16" fill="#fffdf7" stroke="#e5d4b2" />
+        <text x="12" y="24" fill="#6b7280" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Stars</text>
+        <text x="12" y="44" fill="#1f2937" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">248</text>
+      </g>
+</svg>

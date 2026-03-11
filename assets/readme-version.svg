@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="24" role="img" aria-label="Free Ride - Unlimited free AI version: v1.0.4">
+  <title>Free Ride - Unlimited free AI version: v1.0.4</title>
+  <rect width="63" height="24" rx="12" fill="#111827" stroke="#111827" />
+  <rect x="51" width="69" height="24" rx="12" fill="#f59e0b" stroke="#111827" />
+  <rect x="62" y="3" width="1" height="18" fill="rgba(255,255,255,0.18)" />
+  <g fill="#fffdf6" font-family="Verdana, DejaVu Sans, sans-serif" font-size="11">
+    <text x="31.5" y="15" text-anchor="middle">version</text>
+    <text x="91.5" y="15" text-anchor="middle">v1.0.4</text>
+  </g>
+</svg>
