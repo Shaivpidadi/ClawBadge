@@ -135,15 +135,15 @@ export function createRateLimiter(
   );
 }
 
-export function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
+export function getClientIp(getHeader: (name: string) => string | undefined): string {
+  const forwardedFor = getHeader("x-forwarded-for");
   if (forwardedFor) {
     return forwardedFor.split(",")[0]?.trim() || "anonymous";
   }
 
   return (
-    request.headers.get("cf-connecting-ip") ||
-    request.headers.get("x-real-ip") ||
+    getHeader("cf-connecting-ip") ||
+    getHeader("x-real-ip") ||
     "anonymous"
   );
 }

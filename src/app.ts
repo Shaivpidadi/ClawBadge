@@ -64,7 +64,7 @@ async function applyRateLimitHeaders(
   c: Context<{ Variables: AppVariables }>,
   scope: RateLimitScope
 ): Promise<RateLimitError | null> {
-  const rateLimit = await c.get("rateLimiter").check(scope, getClientIp(c.req.raw));
+  const rateLimit = await c.get("rateLimiter").check(scope, getClientIp((name) => c.req.header(name)));
   c.header("X-RateLimit-Limit", String(rateLimit.limit));
   c.header("X-RateLimit-Remaining", String(rateLimit.remaining));
   c.header("X-RateLimit-Reset", String(Math.ceil(rateLimit.resetAt / 1000)));
@@ -107,7 +107,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
       path: c.req.path,
       status: c.res.status,
       durationMs: Number((performance.now() - startedAt).toFixed(2)),
-      ip: getClientIp(c.req.raw),
+      ip: getClientIp((name) => c.req.header(name)),
       source: c.res.headers.get("X-ClawBadge-Source") ?? null
     });
   });

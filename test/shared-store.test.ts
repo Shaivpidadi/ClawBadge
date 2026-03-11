@@ -51,6 +51,16 @@ class FakeSharedStoreClient implements SharedStoreClient {
     return next;
   }
 
+  async pexpire(key: string, ms: number): Promise<unknown> {
+    const existing = this.entries.get(key);
+    if (!existing) {
+      return 0;
+    }
+
+    this.entries.set(key, { value: existing.value, expiresAt: this.now + ms });
+    return 1;
+  }
+
   advance(ms: number): void {
     this.now += ms;
   }
