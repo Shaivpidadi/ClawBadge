@@ -145,44 +145,22 @@ function renderMetricTiles(skill: NormalizedSkill): string {
 }
 
 function renderEmptyState(origin: string): string {
-  const examples = [
-    {
-      title: "Paste a slug",
-      body: "Start with a public ClawHub skill slug such as free-ride. The generator fetches live public stats only.",
-      accent: "01"
-    },
-    {
-      title: "Preview the embeds",
-      body: "Inspect badge rails, dark and flat themes, and the larger summary card before you ship it to a README.",
-      accent: "02"
-    },
-    {
-      title: "Copy markdown",
-      body: "Use stable URLs from the API host so future marketing pages on the root domain never break embedded badges.",
-      accent: "03"
-    }
-  ];
-
-  const exampleCards = examples
-    .map(
-      (example) => `<article class="empty-card">
-        <span class="empty-card-index">${escapeXml(example.accent)}</span>
-        <h3>${escapeXml(example.title)}</h3>
-        <p>${escapeXml(example.body)}</p>
-      </article>`
-    )
-    .join("");
-
   return `<section class="workspace empty-workspace">
     <div class="workspace-head">
       <div>
-        <p class="section-label">Launch sequence</p>
-        <h2>Build once, paste everywhere.</h2>
+        <p class="section-label">How it works</p>
+        <h2>Paste a slug, inspect the embeds, copy the markdown.</h2>
       </div>
       <span class="workspace-pill">${escapeXml(origin)}</span>
     </div>
     <div class="empty-grid">
-      ${exampleCards}
+      <article class="empty-card">
+        <ol class="step-list">
+          <li><strong>Use a public slug.</strong> Start with a skill such as <code>free-ride</code>.</li>
+          <li><strong>Preview the output.</strong> The page renders badge rows and the summary card from live public ClawHub data.</li>
+          <li><strong>Keep embeds stable.</strong> All generated links stay on the API host so the root domain can become the marketing site later.</li>
+        </ol>
+      </article>
       <article class="console-card">
         <p class="section-label">Example endpoints</p>
         <code>GET ${escapeXml(origin)}/api/skills/free-ride</code>
@@ -234,7 +212,7 @@ function renderPreviewSection(skill: NormalizedSkill, origin: string, defaultMar
   return `<section class="workspace skill-workspace">
       <div class="workspace-head">
         <div>
-          <p class="section-label">Live specimen</p>
+          <p class="section-label">Skill</p>
           <h2>${escapeXml(skill.displayName)}</h2>
           <p class="workspace-copy">${escapeXml(summary)}</p>
         </div>
@@ -253,19 +231,21 @@ function renderPreviewSection(skill: NormalizedSkill, origin: string, defaultMar
       <div class="feature-card stage-card">
         <div class="stage-head">
           <div>
-            <p class="section-label">Card studio</p>
-            <h2>README-ready hero asset</h2>
+            <p class="section-label">Card</p>
+            <h2>Summary card previews</h2>
           </div>
           <a class="text-link" href="${escapeXml(`https://clawhub.ai/skills/${skill.slug}`)}" target="_blank" rel="noreferrer">Open on ClawHub</a>
         </div>
-        <img class="card-preview main-card" src="${escapeXml(`${origin}/badge/${skill.slug}/card.svg?theme=flat&showOwner=1&showUpdated=1`)}" alt="Flat ClawHub summary card" />
-        <img class="card-preview secondary-card" src="${escapeXml(`${origin}/badge/${skill.slug}/card.svg?theme=dark&showOwner=1&showUpdated=1`)}" alt="Dark ClawHub summary card" />
+        <div class="card-gallery">
+          <img class="card-preview main-card" src="${escapeXml(`${origin}/badge/${skill.slug}/card.svg?theme=flat&showOwner=1&showUpdated=1`)}" alt="Flat ClawHub summary card" />
+          <img class="card-preview secondary-card" src="${escapeXml(`${origin}/badge/${skill.slug}/card.svg?theme=dark&showOwner=1&showUpdated=1`)}" alt="Dark ClawHub summary card" />
+        </div>
       </div>
       <div class="feature-card rail-group">
         <div class="stage-head">
           <div>
-            <p class="section-label">Badge rails</p>
-            <h2>Three visual tones</h2>
+            <p class="section-label">Badges</p>
+            <h2>Theme variants</h2>
           </div>
         </div>
         ${renderBadgeRail(origin, skill.slug, "default", "Registry default", "Balanced sea-glass contrast")}
@@ -276,8 +256,8 @@ function renderPreviewSection(skill: NormalizedSkill, origin: string, defaultMar
     <section class="workspace snippet-workspace">
       <div class="workspace-head">
         <div>
-          <p class="section-label">Copy deck</p>
-          <h2>Ship embeds without hand-editing markdown.</h2>
+          <p class="section-label">Markdown</p>
+          <h2>Copy the exact embed you want.</h2>
         </div>
         <span class="workspace-pill">${escapeXml(origin)}</span>
       </div>
@@ -303,7 +283,7 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         <h2>${escapeXml(error.title)}</h2>
         <p class="workspace-copy">${escapeXml(error.message)}</p>
       </section>`
-    : "";
+      : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -316,9 +296,9 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         color-scheme: dark;
         --bg: #06131d;
         --bg-deep: #04111a;
-        --panel: rgba(8, 22, 34, 0.88);
+        --panel: rgba(8, 22, 34, 0.9);
         --panel-strong: rgba(10, 28, 42, 0.96);
-        --panel-soft: rgba(11, 31, 45, 0.78);
+        --panel-soft: rgba(11, 31, 45, 0.76);
         --line: rgba(143, 228, 255, 0.16);
         --line-strong: rgba(255, 165, 114, 0.28);
         --text: #f5ecd7;
@@ -330,27 +310,22 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         --teal-soft: rgba(118, 215, 247, 0.18);
         --sand: #fff3dd;
         --code: #07141f;
-        --shadow: 0 28px 60px rgba(0, 0, 0, 0.34);
+        --shadow: 0 18px 38px rgba(0, 0, 0, 0.26);
       }
 
       * {
         box-sizing: border-box;
       }
 
-      html {
-        scroll-behavior: smooth;
-      }
-
       body {
         margin: 0;
         min-height: 100vh;
         color: var(--text);
-        font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+        font-family: "Avenir Next", "Trebuchet MS", sans-serif;
         background:
-          radial-gradient(circle at 14% 12%, rgba(255, 139, 87, 0.2), transparent 22%),
-          radial-gradient(circle at 82% 14%, rgba(118, 215, 247, 0.18), transparent 20%),
-          radial-gradient(circle at 74% 78%, rgba(255, 181, 115, 0.16), transparent 24%),
-          linear-gradient(180deg, #082030 0%, var(--bg) 44%, var(--bg-deep) 100%);
+          radial-gradient(circle at 14% 12%, rgba(255, 139, 87, 0.14), transparent 20%),
+          radial-gradient(circle at 82% 14%, rgba(118, 215, 247, 0.12), transparent 18%),
+          linear-gradient(180deg, #082030 0%, var(--bg) 46%, var(--bg-deep) 100%);
         overflow-x: hidden;
       }
 
@@ -364,27 +339,27 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       }
 
       body::before {
-        width: 42rem;
-        height: 42rem;
+        width: 30rem;
+        height: 30rem;
         left: -14rem;
         top: 18rem;
-        background: radial-gradient(circle, rgba(8, 39, 57, 0.72), transparent 66%);
+        background: radial-gradient(circle, rgba(8, 39, 57, 0.48), transparent 66%);
       }
 
       body::after {
-        width: 36rem;
-        height: 36rem;
+        width: 24rem;
+        height: 24rem;
         right: -11rem;
         top: -7rem;
-        background: radial-gradient(circle, rgba(255, 139, 87, 0.14), transparent 66%);
+        background: radial-gradient(circle, rgba(255, 139, 87, 0.1), transparent 66%);
       }
 
       main {
         position: relative;
         z-index: 1;
-        width: min(1240px, calc(100vw - 28px));
+        width: min(1180px, calc(100vw - 28px));
         margin: 0 auto;
-        padding: 28px 0 72px;
+        padding: 20px 0 44px;
       }
 
       h1,
@@ -392,8 +367,8 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       h3,
       strong {
         margin: 0;
-        font-family: "Avenir Next Condensed", "Trebuchet MS", sans-serif;
-        letter-spacing: -0.04em;
+        font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+        letter-spacing: -0.03em;
       }
 
       p {
@@ -408,27 +383,25 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       .workspace,
       .feature-card,
       .snippet-card,
-      .empty-card,
       .console-card,
       .rail-card {
         border: 1px solid var(--line);
         background: var(--panel);
         box-shadow: var(--shadow);
-        backdrop-filter: blur(18px);
+        backdrop-filter: blur(14px);
       }
 
       .hero-shell {
         display: grid;
-        grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.85fr);
-        gap: 24px;
-        border-radius: 34px;
-        padding: 26px;
-        animation: rise 0.55s ease-out both;
+        grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
+        gap: 18px;
+        border-radius: 28px;
+        padding: 20px;
       }
 
       .hero-copy {
         display: grid;
-        gap: 20px;
+        gap: 14px;
         align-content: start;
       }
 
@@ -441,56 +414,44 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
 
       .section-label {
         color: var(--teal);
-        font-size: 0.78rem;
+        font-size: 0.74rem;
       }
 
       .mini-label {
         color: #ffc59d;
-        font-size: 0.72rem;
+        font-size: 0.68rem;
       }
 
       .hero-copy h1 {
-        max-width: 12ch;
-        font-size: clamp(3rem, 7vw, 5.4rem);
-        line-height: 0.92;
+        max-width: 14ch;
+        font-size: clamp(2.1rem, 4.8vw, 3.35rem);
+        line-height: 0.98;
       }
 
       .hero-copy p {
-        max-width: 54ch;
+        max-width: 58ch;
         color: var(--muted);
-        font-size: 1.03rem;
-        line-height: 1.7;
+        font-size: 0.98rem;
+        line-height: 1.58;
       }
 
-      .hero-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .meta-chip,
       .workspace-pill,
       .rail-note {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        min-height: 34px;
-        padding: 0 14px;
+        min-height: 30px;
+        padding: 0 12px;
         border-radius: 999px;
         border: 1px solid rgba(255, 255, 255, 0.08);
-        font-size: 0.86rem;
-      }
-
-      .meta-chip {
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--muted-strong);
+        font-size: 0.8rem;
       }
 
       .hero-form-shell {
         display: grid;
-        gap: 14px;
-        padding: 18px;
-        border-radius: 24px;
+        gap: 10px;
+        padding: 14px;
+        border-radius: 18px;
         background: rgba(255, 255, 255, 0.035);
         border: 1px solid rgba(255, 255, 255, 0.08);
       }
@@ -504,8 +465,8 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       input {
         min-width: 0;
         border: 1px solid rgba(143, 228, 255, 0.16);
-        border-radius: 18px;
-        padding: 16px 18px;
+        border-radius: 14px;
+        padding: 14px 16px;
         font: inherit;
         color: var(--sand);
         background: rgba(4, 17, 26, 0.72);
@@ -534,15 +495,15 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       button,
       .copy-button {
         border: 0;
-        border-radius: 18px;
+        border-radius: 14px;
         font-weight: 700;
       }
 
       button {
-        padding: 16px 20px;
+        padding: 14px 18px;
         color: #fff8f3;
         background: linear-gradient(135deg, var(--accent) 0%, #f8a13f 100%);
-        box-shadow: 0 14px 30px rgba(214, 77, 47, 0.28);
+        box-shadow: 0 10px 22px rgba(214, 77, 47, 0.22);
         transition: transform 180ms ease, box-shadow 180ms ease;
       }
 
@@ -556,28 +517,29 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       .sample-links {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 8px;
       }
 
       .sample-link {
         text-decoration: none;
-        padding: 10px 14px;
+        padding: 8px 12px;
         border-radius: 999px;
         background: rgba(118, 215, 247, 0.08);
         border: 1px solid rgba(118, 215, 247, 0.12);
         color: var(--muted-strong);
+        font-size: 0.88rem;
       }
 
       .hero-stage {
         position: relative;
         display: grid;
         align-content: space-between;
-        gap: 18px;
+        gap: 14px;
         min-height: 100%;
-        padding: 24px;
-        border-radius: 28px;
+        padding: 18px;
+        border-radius: 22px;
         background:
-          radial-gradient(circle at 18% 18%, rgba(255, 139, 87, 0.16), transparent 24%),
+          radial-gradient(circle at 18% 18%, rgba(255, 139, 87, 0.12), transparent 22%),
           linear-gradient(180deg, rgba(4, 15, 24, 0.72), rgba(4, 15, 24, 0.92));
         overflow: hidden;
       }
@@ -591,21 +553,19 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       }
 
       .hero-stage::before {
-        width: 160px;
-        height: 160px;
+        width: 120px;
+        height: 120px;
         right: -30px;
         top: -30px;
-        background: radial-gradient(circle, rgba(118, 215, 247, 0.22), transparent 68%);
-        animation: drift 8s ease-in-out infinite;
+        background: radial-gradient(circle, rgba(118, 215, 247, 0.16), transparent 68%);
       }
 
       .hero-stage::after {
-        width: 110px;
-        height: 110px;
+        width: 82px;
+        height: 82px;
         left: -12px;
         bottom: 16px;
-        background: radial-gradient(circle, rgba(255, 139, 87, 0.24), transparent 68%);
-        animation: drift 10s ease-in-out infinite reverse;
+        background: radial-gradient(circle, rgba(255, 139, 87, 0.18), transparent 68%);
       }
 
       .stage-brand {
@@ -613,31 +573,31 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         z-index: 1;
         display: grid;
         justify-items: start;
-        gap: 14px;
+        gap: 10px;
       }
 
       .brand-mark {
-        width: clamp(164px, 24vw, 208px);
+        width: clamp(126px, 18vw, 172px);
         height: auto;
       }
 
       .stage-brand h2 {
-        font-size: clamp(1.7rem, 3vw, 2.35rem);
+        font-size: clamp(1.45rem, 2.5vw, 1.9rem);
       }
 
       .stage-brand p {
-        max-width: 28ch;
+        max-width: 30ch;
         color: var(--muted);
-        line-height: 1.65;
+        line-height: 1.55;
       }
 
       .endpoint-card {
         position: relative;
         z-index: 1;
         display: grid;
-        gap: 10px;
-        padding: 18px;
-        border-radius: 24px;
+        gap: 8px;
+        padding: 14px;
+        border-radius: 18px;
         background: rgba(255, 255, 255, 0.045);
         border: 1px solid rgba(255, 255, 255, 0.07);
       }
@@ -645,20 +605,19 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       .endpoint-card code,
       .console-card code {
         display: block;
-        padding: 12px 14px;
-        border-radius: 16px;
+        padding: 10px 12px;
+        border-radius: 12px;
         background: rgba(2, 9, 15, 0.78);
         color: #bcecff;
         font-family: "SFMono-Regular", "Menlo", monospace;
-        font-size: 0.84rem;
+        font-size: 0.8rem;
         word-break: break-word;
       }
 
       .workspace {
-        margin-top: 22px;
-        border-radius: 30px;
-        padding: 24px;
-        animation: rise 0.65s ease-out both;
+        margin-top: 14px;
+        border-radius: 24px;
+        padding: 16px;
       }
 
       .status-banner {
@@ -673,23 +632,23 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         display: flex;
         justify-content: space-between;
         align-items: start;
-        gap: 16px;
+        gap: 12px;
       }
 
       .workspace-head {
-        margin-bottom: 22px;
+        margin-bottom: 12px;
       }
 
       .workspace-head h2,
       .stage-head h2 {
-        font-size: clamp(1.8rem, 3vw, 2.5rem);
+        font-size: clamp(1.45rem, 2.4vw, 1.95rem);
       }
 
       .workspace-copy {
-        margin-top: 10px;
+        margin-top: 6px;
         max-width: 64ch;
         color: var(--muted);
-        line-height: 1.68;
+        line-height: 1.56;
       }
 
       .workspace-meta {
@@ -718,7 +677,7 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       .snippet-grid,
       .empty-grid {
         display: grid;
-        gap: 16px;
+        gap: 12px;
       }
 
       .metric-grid {
@@ -727,40 +686,47 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
 
       .metric-tile,
       .empty-card {
-        padding: 18px;
-        border-radius: 24px;
+        padding: 12px;
+        border-radius: 18px;
         background: var(--panel-soft);
         border: 1px solid rgba(118, 215, 247, 0.12);
       }
 
       .metric-tile strong {
         display: block;
-        margin-top: 8px;
-        font-size: clamp(1.7rem, 2vw, 2.2rem);
+        margin-top: 6px;
+        font-size: clamp(1.45rem, 1.9vw, 1.9rem);
       }
 
       .metric-tile span {
         display: inline-block;
-        margin-top: 8px;
+        margin-top: 6px;
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 0.84rem;
       }
 
       .display-grid {
         display: grid;
         grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-        gap: 18px;
+        gap: 14px;
       }
 
       .feature-card {
-        border-radius: 28px;
-        padding: 20px;
+        border-radius: 22px;
+        padding: 14px;
       }
 
       .stage-card,
       .rail-group {
         display: grid;
-        gap: 16px;
+        gap: 10px;
+      }
+
+      .card-gallery {
+        display: grid;
+        grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.78fr);
+        gap: 10px;
+        align-items: start;
       }
 
       .card-preview {
@@ -771,25 +737,25 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       }
 
       .main-card {
-        padding: 10px;
+        padding: 8px;
         background: linear-gradient(180deg, rgba(255, 139, 87, 0.08), rgba(118, 215, 247, 0.05));
       }
 
       .secondary-card {
-        padding: 8px;
+        padding: 6px;
         background: rgba(255, 255, 255, 0.03);
       }
 
       .rail-card {
-        border-radius: 24px;
-        padding: 16px;
+        border-radius: 18px;
+        padding: 12px;
         background: rgba(255, 255, 255, 0.035);
       }
 
       .rail-stack {
         display: grid;
-        gap: 10px;
-        margin-top: 14px;
+        gap: 8px;
+        margin-top: 10px;
       }
 
       .rail-stack img {
@@ -807,28 +773,29 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       }
 
       .snippet-card {
-        border-radius: 24px;
-        padding: 18px;
+        border-radius: 18px;
+        padding: 12px;
         background: rgba(255, 255, 255, 0.03);
       }
 
       .snippet-card-head {
-        margin-bottom: 14px;
+        margin-bottom: 10px;
       }
 
       .snippet-card h3,
       .empty-card h3,
       .console-card h3,
       .rail-head h3 {
-        font-size: 1.3rem;
+        font-size: 1.08rem;
       }
 
       .copy-button {
-        min-width: 76px;
-        padding: 10px 14px;
+        min-width: 70px;
+        padding: 8px 12px;
         color: var(--sand);
         background: rgba(118, 215, 247, 0.12);
         border: 1px solid rgba(118, 215, 247, 0.16);
+        font-size: 0.84rem;
       }
 
       .copy-button.is-copied {
@@ -838,52 +805,53 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
 
       pre {
         margin: 0;
-        padding: 14px 16px;
-        min-height: 148px;
+        padding: 12px 14px;
+        min-height: 88px;
         overflow-x: auto;
-        border-radius: 18px;
+        border-radius: 14px;
         background: var(--code);
         color: #d5effd;
         border: 1px solid rgba(118, 215, 247, 0.1);
         font-family: "SFMono-Regular", "Menlo", monospace;
-        font-size: 0.85rem;
-        line-height: 1.65;
+        font-size: 0.82rem;
+        line-height: 1.55;
         white-space: pre-wrap;
         word-break: break-word;
       }
 
       .empty-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
       }
 
       .empty-card {
-        min-height: 200px;
+        min-height: auto;
       }
 
-      .empty-card-index {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 999px;
-        background: rgba(255, 139, 87, 0.16);
-        color: #ffd9b5;
-        font-weight: 700;
-      }
-
-      .empty-card p {
-        margin-top: 12px;
+      .step-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        display: grid;
+        gap: 10px;
         color: var(--muted);
-        line-height: 1.7;
+        line-height: 1.58;
+      }
+
+      .step-list strong {
+        color: var(--sand);
+        font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+        letter-spacing: 0;
+      }
+
+      .step-list code {
+        color: var(--muted-strong);
+        font-family: "SFMono-Regular", "Menlo", monospace;
       }
 
       .console-card {
-        grid-column: span 3;
         display: grid;
-        gap: 12px;
-        padding: 20px;
-        border-radius: 24px;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 18px;
         background: linear-gradient(135deg, rgba(7, 20, 31, 0.92), rgba(9, 32, 48, 0.9));
       }
 
@@ -892,62 +860,39 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         text-decoration: none;
       }
 
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(16px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes drift {
-        0%, 100% {
-          transform: translate3d(0, 0, 0);
-        }
-        50% {
-          transform: translate3d(0, 10px, 0);
-        }
-      }
-
       @media (max-width: 1080px) {
         .hero-shell,
-        .display-grid {
+        .display-grid,
+        .empty-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .card-gallery {
           grid-template-columns: 1fr;
         }
 
         .metric-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-
-        .empty-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .console-card {
-          grid-column: auto;
-        }
       }
 
       @media (max-width: 720px) {
         main {
           width: min(100vw - 18px, 100%);
-          padding: 16px 0 52px;
+          padding: 14px 0 40px;
         }
 
         .hero-shell,
         .workspace {
-          border-radius: 26px;
-          padding: 18px;
+          border-radius: 22px;
+          padding: 14px;
         }
 
         .hero-copy h1,
         .workspace-head h2,
         .stage-head h2 {
           max-width: none;
-          font-size: clamp(2.2rem, 12vw, 3.35rem);
+          font-size: clamp(1.9rem, 11vw, 2.65rem);
         }
 
         form,
@@ -962,6 +907,10 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
         button,
         .copy-button {
           width: 100%;
+        }
+
+        .hero-stage {
+          padding: 14px;
         }
 
         .metric-grid {
@@ -983,13 +932,8 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
       <section class="hero-shell">
         <div class="hero-copy">
           <p class="section-label">ClawBadge Generator</p>
-          <h1>Make README badges feel like part of the product.</h1>
-          <p>Generate live ClawHub embeds from a public skill slug, preview three visual tones, and copy markdown that stays stable on the API subdomain while the root domain remains free for the future website.</p>
-          <div class="hero-meta">
-            <span class="meta-chip">Ocean registry palette</span>
-            <span class="meta-chip">Live SVG badges</span>
-            <span class="meta-chip">Card + markdown studio</span>
-          </div>
+          <h1>Generate clean ClawHub embeds.</h1>
+          <p>Paste a public slug, inspect the badge and card variants, and copy markdown that stays pinned to the API host while the root domain becomes the site later.</p>
           <div class="hero-form-shell">
             <form id="slug-form">
               <input id="slug-input" name="slug" value="${escapeXml(defaultSlug)}" placeholder="free-ride" autocomplete="off" spellcheck="false" />
@@ -1006,10 +950,10 @@ export function renderGeneratorPage({ slug, origin, skill, error }: GeneratorPag
           <div class="stage-brand">
             ${renderBrandMark()}
             <div>
-              <p class="section-label">Lobster deck</p>
-              <h2>Deep-sea badge workshop.</h2>
+              <p class="section-label">Service host</p>
+              <h2>Compact preview, stable URLs.</h2>
             </div>
-            <p>OpenClaw and ClawHub already lean into this lobster/ocean identity. The generator should feel like the same family, just tuned for embeds and launch assets.</p>
+            <p>The page keeps the ClawHub lobster palette, but the layout now behaves like a tool: direct, dense, and easy to scan.</p>
           </div>
           <div class="endpoint-card">
             <p class="section-label">Stable host</p>
