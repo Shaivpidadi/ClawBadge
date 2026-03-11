@@ -7,6 +7,7 @@ const envSchema = z.object({
     .string()
     .url()
     .default("https://clawhub.ai/api/v1"),
+  APP_BASE_URL: z.string().url().optional(),
   CACHE_TTL_SECONDS: z.coerce.number().int().min(1).default(300),
   STALE_TTL_SECONDS: z.coerce.number().int().min(1).default(3600),
   UPSTREAM_TIMEOUT_MS: z.coerce.number().int().min(250).default(2500),
@@ -30,6 +31,7 @@ export type AppConfig = {
   nodeEnv: "development" | "test" | "production";
   port: number;
   clawHubApiBase: string;
+  appBaseUrl: string | null;
   cacheTtlMs: number;
   staleTtlMs: number;
   upstreamTimeoutMs: number;
@@ -92,6 +94,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     nodeEnv: parsed.NODE_ENV,
     port: parsed.PORT,
     clawHubApiBase: normalizeBaseUrl(parsed.CLAWHUB_API_BASE),
+    appBaseUrl: parsed.APP_BASE_URL ? normalizeBaseUrl(parsed.APP_BASE_URL) : null,
     cacheTtlMs: parsed.CACHE_TTL_SECONDS * 1000,
     staleTtlMs: parsed.STALE_TTL_SECONDS * 1000,
     upstreamTimeoutMs: parsed.UPSTREAM_TIMEOUT_MS,

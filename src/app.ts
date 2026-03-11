@@ -89,11 +89,12 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
 
   app.get("/", async (c) => {
     const rateLimitError = await applyRateLimitHeaders(c, "page");
+    const origin = c.get("config").appBaseUrl ?? new URL(c.req.url).origin;
     if (rateLimitError) {
       setHtmlHeaders(c);
       return c.html(
         renderGeneratorPage({
-          origin: new URL(c.req.url).origin,
+          origin,
           error: {
             title: "Rate limit reached",
             message: "ClawBadge received too many generator requests from this IP. Retry shortly."
@@ -106,7 +107,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
     setHtmlHeaders(c);
     return c.html(
       renderGeneratorPage({
-        origin: new URL(c.req.url).origin
+        origin
       })
     );
   });
@@ -223,7 +224,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
   });
 
   app.get("/generate/:slug", async (c) => {
-    const origin = new URL(c.req.url).origin;
+    const origin = c.get("config").appBaseUrl ?? new URL(c.req.url).origin;
     const rateLimitError = await applyRateLimitHeaders(c, "page");
 
     if (rateLimitError) {

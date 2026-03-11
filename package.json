@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Read-only ClawHub badge service for embeddable SVG badges and cards.",
+  "description": "Embeddable SVG badges and summary cards for public ClawHub skill stats.",
+  "license": "MIT",
+  "keywords": [
+    "clawhub",
+    "openclaw",
+    "svg",
+    "badges",
+    "hono",
+    "readme"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
