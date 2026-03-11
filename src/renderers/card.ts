@@ -54,11 +54,15 @@ export function renderSkillCard(skill: NormalizedSkill, options: CardOptions): s
     { label: "Stars", value: compactNumber(skill.stars), detail: formatInteger(skill.stars) }
   ];
 
+  const metricPadding = 26;
+  const metricGap = 12;
+  const metricBlockWidth = Math.floor((width - 2 * metricPadding - 3 * metricGap) / 4);
+
   const metricBlocks = metrics
     .map((metric, index) => {
-      const blockWidth = options.compact ? 74 : 88;
-      const gap = 12;
-      const x = 26 + index * (blockWidth + gap);
+      const blockWidth = metricBlockWidth;
+      const gap = metricGap;
+      const x = metricPadding + index * (blockWidth + gap);
 
       return `<g transform="translate(${x} 144)">
         <rect width="${blockWidth}" height="62" rx="16" fill="${palette.metricBackground}" stroke="${palette.metricBorder}" />

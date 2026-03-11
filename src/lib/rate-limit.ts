@@ -102,8 +102,10 @@ export class RedisRateLimiter implements RateLimiter {
     const key = `${this.keyPrefix}${scope}:${identifier}:${windowIndex}`;
 
     try {
-      await this.client.set(key, "0", { nx: true, px: ttlMs });
       const count = await this.client.incr(key);
+      if (count === 1) {
+        await this.client.pexpire(key, ttlMs);
+      }
 
       return {
         allowed: count <= rule.limit,

@@ -51,6 +51,11 @@ function resolveRequestOrigin(c: Context<{ Variables: AppVariables }>): string {
       return `${protocol}://${host}`;
     }
 
+    c.get("logger").warn("resolveRequestOrigin.fallback", {
+      url: c.req.url,
+      reason: "no host header and URL parsing failed"
+    });
+
     return "http://localhost";
   }
 }
@@ -299,6 +304,11 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
         normalized.statusCode as 400 | 404 | 500 | 502 | 503
       );
     }
+  });
+
+  app.notFound((c) => {
+    setJsonHeaders(c);
+    return c.json({ error: "not_found" }, 404);
   });
 
   return app;

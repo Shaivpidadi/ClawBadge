@@ -35,19 +35,19 @@ exports[`SVG renderers > renders the summary card snapshot 1`] = `
   <text x="28" y="102" fill="#cbd5e1" font-family="Verdana, DejaVu Sans, sans-serif" font-size="13">Unlimited free AI access for demos &amp; experiments.</text>
   <text x="28" y="122" fill="#94a3b8" font-family="Verdana, DejaVu Sans, sans-serif" font-size="12">by @shaivpidadi • Updated Feb 2026</text>
   <g transform="translate(26 144)">
-        <rect width="88" height="62" rx="16" fill="#111827" stroke="#1e293b" />
+        <rect width="83" height="62" rx="16" fill="#111827" stroke="#1e293b" />
         <text x="12" y="24" fill="#94a3b8" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Downloads</text>
         <text x="12" y="44" fill="#f8fafc" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">32.5k</text>
-      </g><g transform="translate(126 144)">
-        <rect width="88" height="62" rx="16" fill="#111827" stroke="#1e293b" />
+      </g><g transform="translate(121 144)">
+        <rect width="83" height="62" rx="16" fill="#111827" stroke="#1e293b" />
         <text x="12" y="24" fill="#94a3b8" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Installed now</text>
         <text x="12" y="44" fill="#f8fafc" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">180</text>
-      </g><g transform="translate(226 144)">
-        <rect width="88" height="62" rx="16" fill="#111827" stroke="#1e293b" />
+      </g><g transform="translate(216 144)">
+        <rect width="83" height="62" rx="16" fill="#111827" stroke="#1e293b" />
         <text x="12" y="24" fill="#94a3b8" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Installed ever</text>
         <text x="12" y="44" fill="#f8fafc" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">183</text>
-      </g><g transform="translate(326 144)">
-        <rect width="88" height="62" rx="16" fill="#111827" stroke="#1e293b" />
+      </g><g transform="translate(311 144)">
+        <rect width="83" height="62" rx="16" fill="#111827" stroke="#1e293b" />
         <text x="12" y="24" fill="#94a3b8" font-family="Verdana, DejaVu Sans, sans-serif" font-size="10">Stars</text>
         <text x="12" y="44" fill="#f8fafc" font-family="Verdana, DejaVu Sans, sans-serif" font-size="18" font-weight="700">248</text>
       </g>

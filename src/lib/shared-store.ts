@@ -11,6 +11,7 @@ export interface SharedStoreClient {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, options?: SharedStoreSetOptions): Promise<unknown>;
   incr(key: string): Promise<number>;
+  pexpire(key: string, ms: number): Promise<unknown>;
 }
 
 export function createSharedStoreClient(config: AppConfig): SharedStoreClient | null {
@@ -44,6 +45,9 @@ export function createSharedStoreClient(config: AppConfig): SharedStoreClient | 
     },
     incr(key) {
       return redis.incr(key);
+    },
+    pexpire(key, ms) {
+      return redis.pexpire(key, ms);
     }
   };
 }
