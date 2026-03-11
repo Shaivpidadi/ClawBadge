@@ -5,3 +5,4 @@ compatibility_date = "2026-03-11"
 [vars]
 CLAWHUB_API_BASE = "https://clawhub.ai/api/v1"
 RATE_LIMIT_ENABLED = "1"
+REDIS_KEY_PREFIX = "clawbadge"

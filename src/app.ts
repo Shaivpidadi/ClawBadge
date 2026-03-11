@@ -5,7 +5,9 @@ import { NotFoundError, RateLimitError, ValidationError } from "./lib/errors.js"
 import { setHtmlHeaders, setJsonHeaders, setSvgHeaders, normalizeError } from "./lib/http.js";
 import { createLogger, Logger } from "./lib/logger.js";
 import { normalizeLabel, parseBadgeMetric, parseBooleanFlag } from "./lib/queries.js";
-import { getClientIp, MemoryRateLimiter, type RateLimitScope } from "./lib/rate-limit.js";
+import { createRateLimiter, getClientIp, type RateLimiter, type RateLimitScope } from "./lib/rate-limit.js";
+import { createSharedStoreClient, type SharedStoreClient } from "./lib/shared-store.js";
+import { createSkillCache } from "./lib/cache.js";
 import { renderErrorBadge, renderMetricBadge } from "./renderers/badge.js";
 import { renderErrorCard, renderSkillCard } from "./renderers/card.js";
 import { resolveTheme } from "./renderers/theme.js";
@@ -16,17 +18,21 @@ type AppVariables = {
   config: AppConfig;
   skillService: SkillService;
   logger: Logger;
-  rateLimiter: MemoryRateLimiter;
+  rateLimiter: RateLimiter;
 };
 
 type AppDependencies = {
   skillService?: SkillService;
   logger?: Logger;
-  rateLimiter?: MemoryRateLimiter;
+  rateLimiter?: RateLimiter;
+  sharedStoreClient?: SharedStoreClient | null;
 };
 
-function applyRateLimitHeaders(c: Context<{ Variables: AppVariables }>, scope: RateLimitScope): RateLimitError | null {
-  const rateLimit = c.get("rateLimiter").check(scope, getClientIp(c.req.raw));
+async function applyRateLimitHeaders(
+  c: Context<{ Variables: AppVariables }>,
+  scope: RateLimitScope
+): Promise<RateLimitError | null> {
+  const rateLimit = await c.get("rateLimiter").check(scope, getClientIp(c.req.raw));
   c.header("X-RateLimit-Limit", String(rateLimit.limit));
   c.header("X-RateLimit-Remaining", String(rateLimit.remaining));
   c.header("X-RateLimit-Reset", String(Math.ceil(rateLimit.resetAt / 1000)));
@@ -41,9 +47,17 @@ function applyRateLimitHeaders(c: Context<{ Variables: AppVariables }>, scope: R
 
 export function createApp(config = loadConfig(), dependencies: AppDependencies = {}): Hono<{ Variables: AppVariables }> {
   const app = new Hono<{ Variables: AppVariables }>();
-  const skillService = dependencies.skillService ?? new SkillService(config);
+  const sharedStoreClient =
+    dependencies.sharedStoreClient === undefined
+      ? createSharedStoreClient(config)
+      : dependencies.sharedStoreClient;
+  const skillService =
+    dependencies.skillService ??
+    new SkillService(config, {
+      cache: createSkillCache(config, sharedStoreClient)
+    });
   const logger = dependencies.logger ?? createLogger(config);
-  const rateLimiter = dependencies.rateLimiter ?? new MemoryRateLimiter(config.rateLimitEnabled);
+  const rateLimiter = dependencies.rateLimiter ?? createRateLimiter(config, sharedStoreClient);
 
   app.use("*", async (c, next) => {
     c.set("config", config);
@@ -73,8 +87,8 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
     })
   );
 
-  app.get("/", (c) => {
-    const rateLimitError = applyRateLimitHeaders(c, "page");
+  app.get("/", async (c) => {
+    const rateLimitError = await applyRateLimitHeaders(c, "page");
     if (rateLimitError) {
       setHtmlHeaders(c);
       return c.html(
@@ -98,7 +112,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
   });
 
   app.get("/api/skills/:slug", async (c) => {
-    const rateLimitError = applyRateLimitHeaders(c, "api");
+    const rateLimitError = await applyRateLimitHeaders(c, "api");
     if (rateLimitError) {
       setJsonHeaders(c);
       return c.json({ error: rateLimitError.code }, rateLimitError.statusCode as 429);
@@ -120,7 +134,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
     const showOwner = parseBooleanFlag(c.req.query("showOwner"));
     const showUpdated = parseBooleanFlag(c.req.query("showUpdated"));
     const compact = parseBooleanFlag(c.req.query("compact"));
-    const rateLimitError = applyRateLimitHeaders(c, "badge");
+    const rateLimitError = await applyRateLimitHeaders(c, "badge");
 
     if (rateLimitError) {
       setSvgHeaders(c);
@@ -169,7 +183,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
     const asset = c.req.param("asset") ?? "";
     const metric = asset.endsWith(".svg") ? parseBadgeMetric(asset.slice(0, -4)) : null;
     const label = normalizeLabel(c.req.query("label"));
-    const rateLimitError = applyRateLimitHeaders(c, "badge");
+    const rateLimitError = await applyRateLimitHeaders(c, "badge");
 
     if (rateLimitError) {
       setSvgHeaders(c);
@@ -210,7 +224,7 @@ export function createApp(config = loadConfig(), dependencies: AppDependencies =
 
   app.get("/generate/:slug", async (c) => {
     const origin = new URL(c.req.url).origin;
-    const rateLimitError = applyRateLimitHeaders(c, "page");
+    const rateLimitError = await applyRateLimitHeaders(c, "page");
 
     if (rateLimitError) {
       setHtmlHeaders(c);

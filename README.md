@@ -7,10 +7,10 @@ ClawBadge is a read-only badge service that turns public ClawHub skill stats int
 - Validates skill slugs before any outbound request.
 - Fetches public ClawHub skill data with timeout, payload-size limits, and schema validation.
 - Normalizes upstream data into a stable JSON shape.
-- Caches normalized skill data with fresh and stale windows.
+- Caches normalized skill data with fresh and stale windows, with optional shared Redis/KV backing for multi-instance deploys.
 - Renders themed SVG metric badges and a richer summary card.
 - Provides a generator page with copy-paste markdown snippets.
-- Applies per-IP rate limiting for badge, JSON, and generator routes.
+- Applies per-IP rate limiting for badge, JSON, and generator routes, with optional distributed limiting via shared Redis/KV.
 - Returns graceful SVG fallback states for invalid, missing, rate-limited, and unavailable badge requests.
 
 ## Stack
@@ -42,8 +42,17 @@ The local server starts on `http://localhost:3000` by default.
 | `UPSTREAM_TIMEOUT_MS` | `2500` | ClawHub request timeout. |
 | `MAX_UPSTREAM_BYTES` | `128000` | Maximum accepted upstream payload size. |
 | `MEMORY_CACHE_SIZE` | `1000` | Max in-memory cache entries. |
+| `UPSTASH_REDIS_REST_URL` | unset | Preferred shared Redis REST URL for multi-instance deploys. |
+| `UPSTASH_REDIS_REST_TOKEN` | unset | Preferred shared Redis REST token. |
+| `KV_REST_API_URL` | unset | Vercel KV REST URL alternative. |
+| `KV_REST_API_TOKEN` | unset | Vercel KV REST token alternative. |
+| `REDIS_URL` | unset | Fallback REST URL alias if you want provider-agnostic naming. |
+| `REDIS_TOKEN` | unset | Fallback REST token alias. |
+| `REDIS_KEY_PREFIX` | `clawbadge` | Namespace prefix for shared cache and rate-limit keys. |
 | `RATE_LIMIT_ENABLED` | `1` | Enables per-IP throttling. |
 | `LOG_LEVEL` | `info` | Structured log threshold. |
+
+If no shared Redis/KV credentials are set, ClawBadge uses only per-process in-memory caching and rate limiting.
 
 ## Routes
 
@@ -131,6 +140,8 @@ The suite covers:
 - upstream normalization/version fallback
 - stale-cache behavior
 - rate limiting
+- shared cache serialization
+- distributed rate limit windows
 - route responses
 - SVG snapshot output
 
@@ -152,10 +163,11 @@ The repo includes:
 - [`vercel.json`](vercel.json) rewriting all routes to the function entrypoint
 
 Deploy the repository directly on Vercel and set the same environment variables listed above.
+For public production traffic on Vercel, also set a shared Redis/KV REST credential pair so cache entries and rate limits are shared across instances.
 
 ### Cloudflare Workers
 
-The repo includes [`wrangler.toml`](wrangler.toml) with `src/app.ts` as the worker entrypoint. Set production values with Wrangler or the Cloudflare dashboard before publishing.
+The repo includes [`wrangler.toml`](wrangler.toml) with `src/app.ts` as the worker entrypoint. Set production values with Wrangler or the Cloudflare dashboard before publishing. For distributed caching and rate limiting, configure a shared Redis/KV REST backend in the Cloudflare dashboard secrets/vars.
 
 ## Security Notes
 

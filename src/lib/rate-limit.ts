@@ -1,8 +1,9 @@
-import type { RateLimitError } from "./errors.js";
+import type { AppConfig } from "../config.js";
+import { createSharedStoreClient, createSharedStoreKey, type SharedStoreClient } from "./shared-store.js";
 
 export type RateLimitScope = "badge" | "api" | "page";
 
-type RateLimitRule = {
+export type RateLimitRule = {
   limit: number;
   windowMs: number;
 };
@@ -20,21 +21,25 @@ type RateLimitBucket = {
   resetAt: number;
 };
 
-const defaultRules: Record<RateLimitScope, RateLimitRule> = {
+export interface RateLimiter {
+  check(scope: RateLimitScope, identifier: string, now?: number): Promise<RateLimitResult>;
+}
+
+export const defaultRateLimitRules: Record<RateLimitScope, RateLimitRule> = {
   badge: { limit: 60, windowMs: 60_000 },
   api: { limit: 30, windowMs: 60_000 },
   page: { limit: 20, windowMs: 60_000 }
 };
 
-export class MemoryRateLimiter {
+export class MemoryRateLimiter implements RateLimiter {
   private readonly buckets = new Map<string, RateLimitBucket>();
 
   constructor(
     private readonly enabled: boolean,
-    private readonly rules: Record<RateLimitScope, RateLimitRule> = defaultRules
+    private readonly rules: Record<RateLimitScope, RateLimitRule> = defaultRateLimitRules
   ) {}
 
-  check(scope: RateLimitScope, identifier: string, now = Date.now()): RateLimitResult {
+  async check(scope: RateLimitScope, identifier: string, now = Date.now()): Promise<RateLimitResult> {
     const rule = this.rules[scope];
     if (!this.enabled) {
       return {
@@ -71,6 +76,61 @@ export class MemoryRateLimiter {
       retryAfterSeconds: 0
     };
   }
+}
+
+export class RedisRateLimiter implements RateLimiter {
+  private readonly fallback: MemoryRateLimiter;
+
+  constructor(
+    private readonly enabled: boolean,
+    private readonly client: SharedStoreClient,
+    private readonly keyPrefix: string,
+    private readonly rules: Record<RateLimitScope, RateLimitRule> = defaultRateLimitRules
+  ) {
+    this.fallback = new MemoryRateLimiter(enabled, rules);
+  }
+
+  async check(scope: RateLimitScope, identifier: string, now = Date.now()): Promise<RateLimitResult> {
+    if (!this.enabled) {
+      return this.fallback.check(scope, identifier, now);
+    }
+
+    const rule = this.rules[scope];
+    const windowIndex = Math.floor(now / rule.windowMs);
+    const resetAt = (windowIndex + 1) * rule.windowMs;
+    const ttlMs = Math.max(1, resetAt - now);
+    const key = `${this.keyPrefix}${scope}:${identifier}:${windowIndex}`;
+
+    try {
+      await this.client.set(key, "0", { nx: true, px: ttlMs });
+      const count = await this.client.incr(key);
+
+      return {
+        allowed: count <= rule.limit,
+        limit: rule.limit,
+        remaining: Math.max(0, rule.limit - count),
+        resetAt,
+        retryAfterSeconds: count <= rule.limit ? 0 : Math.max(1, Math.ceil(ttlMs / 1000))
+      };
+    } catch {
+      return this.fallback.check(scope, identifier, now);
+    }
+  }
+}
+
+export function createRateLimiter(
+  config: AppConfig,
+  sharedClient: SharedStoreClient | null = createSharedStoreClient(config)
+): RateLimiter {
+  if (!sharedClient) {
+    return new MemoryRateLimiter(config.rateLimitEnabled);
+  }
+
+  return new RedisRateLimiter(
+    config.rateLimitEnabled,
+    sharedClient,
+    `${createSharedStoreKey(config, "ratelimit", "")}`
+  );
 }
 
 export function getClientIp(request: Request): string {
