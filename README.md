@@ -103,14 +103,14 @@ Supported query params:
 
 ## Example Markdown
 
-Replace `YOUR_DOMAIN` with the deployed domain:
+Replace `clawhub-badge.xyz` with the deployed domain:
 
 ```md
-[![ClawHub Downloads](https://YOUR_DOMAIN/badge/free-ride/downloads.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Current Installs](https://YOUR_DOMAIN/badge/free-ride/installs-current.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Stars](https://YOUR_DOMAIN/badge/free-ride/stars.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Version](https://YOUR_DOMAIN/badge/free-ride/version.svg)](https://clawhub.ai/skills/free-ride)
-[![ClawHub Card](https://YOUR_DOMAIN/badge/free-ride/card.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Downloads](https://clawhub-badge.xyz/badge/free-ride/downloads.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Current Installs](https://clawhub-badge.xyz/badge/free-ride/installs-current.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Stars](https://clawhub-badge.xyz/badge/free-ride/stars.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Version](https://clawhub-badge.xyz/badge/free-ride/version.svg)](https://clawhub.ai/skills/free-ride)
+[![ClawHub Card](https://clawhub-badge.xyz/badge/free-ride/card.svg)](https://clawhub.ai/skills/free-ride)
 ```
 
 ## Development Commands
