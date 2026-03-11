@@ -4,7 +4,7 @@ import { createCacheEnvelope, createSkillCache, isFresh, isStaleButUsable } from
 import { fetchClawHubSkill } from "../lib/clawhub.js";
 import { isRecoverableUpstreamError } from "../lib/errors.js";
 import { validateSlug } from "../lib/validation.js";
-import type { NormalizedSkill, SkillLookupResult } from "../types.js";
+import type { CacheEnvelope, NormalizedSkill, SkillLookupResult } from "../types.js";
 
 export class SkillService {
   private readonly inflight = new Map<string, Promise<SkillLookupResult>>();
@@ -49,7 +49,7 @@ export class SkillService {
       };
     }
 
-    return this.fetchAndCache(cacheKey, slug, cached?.value);
+    return this.fetchAndCache(cacheKey, slug);
   }
 
   private revalidateInBackground(cacheKey: string, slug: string): void {
@@ -57,7 +57,7 @@ export class SkillService {
       return;
     }
 
-    const promise = this.fetchAndCache(cacheKey, slug)
+    const promise = this.fetchFresh(cacheKey, slug)
       .catch(() => undefined)
       .finally(() => {
         this.inflight.delete(cacheKey);
@@ -66,11 +66,7 @@ export class SkillService {
     this.inflight.set(cacheKey, promise as Promise<SkillLookupResult>);
   }
 
-  private async fetchAndCache(
-    cacheKey: string,
-    slug: string,
-    fallbackValue?: NormalizedSkill
-  ): Promise<SkillLookupResult> {
+  private async fetchAndCache(cacheKey: string, slug: string): Promise<SkillLookupResult> {
     const existing = this.inflight.get(cacheKey);
     if (existing) {
       return existing;
@@ -85,13 +81,9 @@ export class SkillService {
     try {
       return await promise;
     } catch (error) {
-      if (fallbackValue && isRecoverableUpstreamError(error)) {
-        return {
-          skill: fallbackValue,
-          fetchedAt: Date.now(),
-          stale: true,
-          source: "stale-cache"
-        };
+      const cached = await this.cache.get(cacheKey);
+      if (cached && isStaleButUsable(cached) && isRecoverableUpstreamError(error)) {
+        return this.fromCachedEnvelope(cached);
       }
 
       throw error;
@@ -110,6 +102,15 @@ export class SkillService {
       fetchedAt: now,
       stale: false,
       source: "upstream"
+    };
+  }
+
+  private fromCachedEnvelope(entry: CacheEnvelope<NormalizedSkill>): SkillLookupResult {
+    return {
+      skill: entry.value,
+      fetchedAt: entry.fetchedAt,
+      stale: true,
+      source: "stale-cache"
     };
   }
 }

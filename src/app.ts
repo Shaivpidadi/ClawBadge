@@ -1,9 +1,11 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 
 import { loadConfig, type AppConfig } from "./config.js";
-import { NotFoundError, ValidationError } from "./lib/errors.js";
+import { NotFoundError, RateLimitError, ValidationError } from "./lib/errors.js";
 import { setHtmlHeaders, setJsonHeaders, setSvgHeaders, normalizeError } from "./lib/http.js";
+import { createLogger, Logger } from "./lib/logger.js";
 import { normalizeLabel, parseBadgeMetric, parseBooleanFlag } from "./lib/queries.js";
+import { getClientIp, MemoryRateLimiter, type RateLimitScope } from "./lib/rate-limit.js";
 import { renderErrorBadge, renderMetricBadge } from "./renderers/badge.js";
 import { renderErrorCard, renderSkillCard } from "./renderers/card.js";
 import { resolveTheme } from "./renderers/theme.js";
@@ -13,16 +15,55 @@ import { renderGeneratorPage } from "./pages/generator.js";
 type AppVariables = {
   config: AppConfig;
   skillService: SkillService;
+  logger: Logger;
+  rateLimiter: MemoryRateLimiter;
 };
 
-export function createApp(config = loadConfig()): Hono<{ Variables: AppVariables }> {
+type AppDependencies = {
+  skillService?: SkillService;
+  logger?: Logger;
+  rateLimiter?: MemoryRateLimiter;
+};
+
+function applyRateLimitHeaders(c: Context<{ Variables: AppVariables }>, scope: RateLimitScope): RateLimitError | null {
+  const rateLimit = c.get("rateLimiter").check(scope, getClientIp(c.req.raw));
+  c.header("X-RateLimit-Limit", String(rateLimit.limit));
+  c.header("X-RateLimit-Remaining", String(rateLimit.remaining));
+  c.header("X-RateLimit-Reset", String(Math.ceil(rateLimit.resetAt / 1000)));
+
+  if (!rateLimit.allowed) {
+    c.header("Retry-After", String(rateLimit.retryAfterSeconds));
+    return new RateLimitError(rateLimit.retryAfterSeconds);
+  }
+
+  return null;
+}
+
+export function createApp(config = loadConfig(), dependencies: AppDependencies = {}): Hono<{ Variables: AppVariables }> {
   const app = new Hono<{ Variables: AppVariables }>();
-  const skillService = new SkillService(config);
+  const skillService = dependencies.skillService ?? new SkillService(config);
+  const logger = dependencies.logger ?? createLogger(config);
+  const rateLimiter = dependencies.rateLimiter ?? new MemoryRateLimiter(config.rateLimitEnabled);
 
   app.use("*", async (c, next) => {
     c.set("config", config);
     c.set("skillService", skillService);
+    c.set("logger", logger);
+    c.set("rateLimiter", rateLimiter);
     await next();
+  });
+
+  app.use("*", async (c, next) => {
+    const startedAt = performance.now();
+    await next();
+    c.get("logger").info("request.completed", {
+      method: c.req.method,
+      path: new URL(c.req.url).pathname,
+      status: c.res.status,
+      durationMs: Number((performance.now() - startedAt).toFixed(2)),
+      ip: getClientIp(c.req.raw),
+      source: c.res.headers.get("X-ClawBadge-Source") ?? null
+    });
   });
 
   app.get("/api/health", (c) =>
@@ -33,6 +74,21 @@ export function createApp(config = loadConfig()): Hono<{ Variables: AppVariables
   );
 
   app.get("/", (c) => {
+    const rateLimitError = applyRateLimitHeaders(c, "page");
+    if (rateLimitError) {
+      setHtmlHeaders(c);
+      return c.html(
+        renderGeneratorPage({
+          origin: new URL(c.req.url).origin,
+          error: {
+            title: "Rate limit reached",
+            message: "ClawBadge received too many generator requests from this IP. Retry shortly."
+          }
+        }),
+        429
+      );
+    }
+
     setHtmlHeaders(c);
     return c.html(
       renderGeneratorPage({
@@ -42,6 +98,12 @@ export function createApp(config = loadConfig()): Hono<{ Variables: AppVariables
   });
 
   app.get("/api/skills/:slug", async (c) => {
+    const rateLimitError = applyRateLimitHeaders(c, "api");
+    if (rateLimitError) {
+      setJsonHeaders(c);
+      return c.json({ error: rateLimitError.code }, rateLimitError.statusCode as 429);
+    }
+
     try {
       const result = await c.get("skillService").getSkillBySlug(c.req.param("slug"));
       setJsonHeaders(c, result.source);
@@ -58,6 +120,19 @@ export function createApp(config = loadConfig()): Hono<{ Variables: AppVariables
     const showOwner = parseBooleanFlag(c.req.query("showOwner"));
     const showUpdated = parseBooleanFlag(c.req.query("showUpdated"));
     const compact = parseBooleanFlag(c.req.query("compact"));
+    const rateLimitError = applyRateLimitHeaders(c, "badge");
+
+    if (rateLimitError) {
+      setSvgHeaders(c);
+      return c.body(
+        renderErrorCard({
+          theme,
+          title: "Rate limited",
+          message: "ClawBadge received too many badge requests from this IP."
+        }),
+        429
+      );
+    }
 
     try {
       const result = await c.get("skillService").getSkillBySlug(c.req.param("slug"));
@@ -89,10 +164,20 @@ export function createApp(config = loadConfig()): Hono<{ Variables: AppVariables
     }
   });
 
-  app.get("/badge/:slug/:metric.svg", async (c) => {
+  app.get("/badge/:slug/:asset", async (c) => {
     const theme = resolveTheme(c.req.query("theme"));
-    const metric = parseBadgeMetric(c.req.param("metric") ?? "");
+    const asset = c.req.param("asset") ?? "";
+    const metric = asset.endsWith(".svg") ? parseBadgeMetric(asset.slice(0, -4)) : null;
     const label = normalizeLabel(c.req.query("label"));
+    const rateLimitError = applyRateLimitHeaders(c, "badge");
+
+    if (rateLimitError) {
+      setSvgHeaders(c);
+      return c.body(
+        renderErrorBadge(label ?? "clawhub", "rate limited", theme),
+        429
+      );
+    }
 
     if (!metric) {
       setSvgHeaders(c);
@@ -125,6 +210,22 @@ export function createApp(config = loadConfig()): Hono<{ Variables: AppVariables
 
   app.get("/generate/:slug", async (c) => {
     const origin = new URL(c.req.url).origin;
+    const rateLimitError = applyRateLimitHeaders(c, "page");
+
+    if (rateLimitError) {
+      setHtmlHeaders(c);
+      return c.html(
+        renderGeneratorPage({
+          origin,
+          slug: c.req.param("slug"),
+          error: {
+            title: "Rate limit reached",
+            message: "ClawBadge received too many generator requests from this IP. Retry shortly."
+          }
+        }),
+        429
+      );
+    }
 
     try {
       const result = await c.get("skillService").getSkillBySlug(c.req.param("slug"));

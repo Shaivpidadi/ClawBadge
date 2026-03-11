@@ -34,6 +34,12 @@ export class UpstreamPayloadError extends ClawBadgeError {
   }
 }
 
+export class RateLimitError extends ClawBadgeError {
+  constructor(readonly retryAfterSeconds: number) {
+    super("Rate limit exceeded.", "rate_limited", 429);
+  }
+}
+
 export function isRecoverableUpstreamError(error: unknown): boolean {
   return error instanceof UpstreamError || error instanceof UpstreamPayloadError;
 }

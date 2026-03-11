@@ -12,6 +12,7 @@
     "dev": "tsx watch src/index.ts",
     "start": "node --enable-source-maps dist/index.js",
     "test": "vitest run",
+    "test:update": "vitest run --update",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
