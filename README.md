@@ -13,10 +13,6 @@
   <img src="./assets/readme-version.svg" alt="Version badge example" />
 </p>
 
-<p align="center">
-  <img src="./assets/readme-card.svg" alt="ClawBadge summary card example" width="760" />
-</p>
-
 ## Preview
 
 ClawBadge follows the same lobster-forward product direction as OpenClaw and ClawHub: deep ocean backgrounds, warm shell orange accents, and clean registry-style UI elements that still feel technical.
